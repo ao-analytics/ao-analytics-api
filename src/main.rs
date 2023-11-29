@@ -34,6 +34,7 @@ async fn main() {
     let app = Router::new()
         .route("/items/:id/localizations", get(get_item_localizations))
         .route("/items/:id/orders", get(get_item_market_orders))
+        .route("/statistics", get(get_statistics))
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", dotenv!("PORT")))
@@ -43,6 +44,50 @@ async fn main() {
     println!("Server running on port {}", dotenv!("PORT"));
 
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn get_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
+    let market_order_count = sqlx::query!("SELECT COUNT(*) FROM market_order")
+        .fetch_one(&pool)
+        .await
+        .unwrap()
+        .count;
+
+    let market_order_count_by_item = sqlx::query_as!(MarketOrderCountByItem, "SELECT item_unique_name, COUNT(*) as count FROM market_order GROUP BY item_unique_name ORDER BY count DESC")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    let market_order_count_by_location = sqlx::query_as!(MarketOrderCountByLocation, "SELECT location.name as location, COUNT(*) as count FROM market_order, location WHERE location_id = location.id GROUP BY location.name ORDER BY count DESC")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    let market_order_count_by_auction_type = sqlx::query_as!(MarketOrderCountByAuctionType, "SELECT auction_type, COUNT(*) as count FROM market_order GROUP BY auction_type ORDER BY count DESC")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    let market_order_count_by_quality_level = sqlx::query_as!(MarketOrderCountByQualityLevel, "SELECT quality_level, COUNT(*) as count FROM market_order GROUP BY quality_level ORDER BY count DESC")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    let market_order_count_by_enchantment_level = sqlx::query_as!(MarketOrderCountByEnchantmentLevel, "SELECT enchantment_level, COUNT(*) as count FROM market_order GROUP BY enchantment_level ORDER BY count DESC")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+
+    let statistics = Statistics {
+        market_order_count,
+        market_order_count_by_item,
+        market_order_count_by_location,
+        market_order_count_by_auction_type,
+        market_order_count_by_quality_level,
+        market_order_count_by_enchantment_level,
+    };
+
+    Json(statistics).into_response()
 }
 
 async fn get_item_market_orders(
@@ -258,4 +303,44 @@ struct MarketOrder {
     auction_type: String,
     expires_at: chrono::NaiveDateTime,
     updated_at: chrono::NaiveDateTime,
+}
+
+#[derive(serde::Serialize)]
+struct Statistics {
+    market_order_count: Option<i64>,
+    market_order_count_by_item: Vec<MarketOrderCountByItem>,
+    market_order_count_by_location: Vec<MarketOrderCountByLocation>,
+    market_order_count_by_auction_type: Vec<MarketOrderCountByAuctionType>,
+    market_order_count_by_quality_level: Vec<MarketOrderCountByQualityLevel>,
+    market_order_count_by_enchantment_level: Vec<MarketOrderCountByEnchantmentLevel>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct MarketOrderCountByItem {
+    item_unique_name: String,
+    count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct MarketOrderCountByLocation {
+    location: String,
+    count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct MarketOrderCountByAuctionType {
+    auction_type: String,
+    count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct MarketOrderCountByQualityLevel {
+    quality_level: i32,
+    count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+struct MarketOrderCountByEnchantmentLevel {
+    enchantment_level: i32,
+    count: Option<i64>,
 }
