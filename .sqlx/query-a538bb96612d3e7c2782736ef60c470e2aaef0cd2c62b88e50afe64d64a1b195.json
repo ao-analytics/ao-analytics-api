@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            item_unique_name, \n            en_us, \n            de_de, \n            fr_fr, \n            ru_ru, \n            pl_pl, \n            es_es, \n            pt_br, \n            it_it, \n            zh_cn, \n            ko_kr, \n            ja_jp, \n            zh_tw, \n            id_id \n        FROM localized_description \n            WHERE item_unique_name = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "item_unique_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "en_us",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "de_de",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "fr_fr",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "ru_ru",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "pl_pl",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "es_es",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "pt_br",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "it_it",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "zh_cn",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "ko_kr",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "ja_jp",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "zh_tw",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "id_id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "a538bb96612d3e7c2782736ef60c470e2aaef0cd2c62b88e50afe64d64a1b195"
+}
