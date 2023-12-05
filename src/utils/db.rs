@@ -1,6 +1,6 @@
 use sqlx::PgPool;
 
-use crate::models::db;
+use crate::models::db::{self, MarketOrderCountByCreatedAt};
 
 pub async fn search_items_by_localized_name(
     pool: &PgPool,
@@ -195,6 +195,41 @@ pub async fn get_market_orders_count_by_enchantment_level(pool: &PgPool) -> Resu
     return sqlx::query_as!(
         db::MarketOrderCountByEnchantmentLevel,
         "SELECT enchantment_level, COUNT(*) as count FROM market_order GROUP BY enchantment_level ORDER BY count DESC"
+    )
+    .fetch_all(pool)
+    .await;
+}
+
+pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
+    return sqlx::query_as!(
+        db::MarketOrder,
+        "SELECT 
+            location.name as location, 
+            quality_level, 
+            enchantment_level, 
+            unit_price_silver, 
+            amount, 
+            auction_type, 
+            expires_at, 
+            updated_at 
+        FROM market_order, location 
+            WHERE location_id = location.id
+            AND expires_at > NOW()
+            ORDER BY unit_price_silver ASC"
+    )
+    .fetch_all(pool)
+    .await;
+}
+
+pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<MarketOrderCountByCreatedAt>, sqlx::Error> {
+    return sqlx::query_as!(
+        MarketOrderCountByCreatedAt,
+        "SELECT 
+            date_trunc('minute', created_at) as created_at, 
+            COUNT(*) as count 
+        FROM market_order 
+            GROUP BY date_trunc('minute', created_at) 
+            ORDER BY created_at DESC"
     )
     .fetch_all(pool)
     .await;

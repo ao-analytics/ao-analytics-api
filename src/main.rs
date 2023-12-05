@@ -41,6 +41,7 @@ async fn main() {
         .route("/items/:id/localizations", get(get_item_localizations))
         .route("/items/:id/orders", get(get_item_market_orders))
         .route("/statistics", get(get_statistics))
+        .route("/orders", get(get_market_orders))
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", dotenv!("PORT")))
@@ -80,6 +81,7 @@ async fn get_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
     let market_order_count_by_auction_type = utils::db::get_market_orders_count_by_auction_type(&pool).await.unwrap();
     let market_order_count_by_quality_level = utils::db::get_market_orders_count_by_quality_level(&pool).await.unwrap();
     let market_order_count_by_enchantment_level = utils::db::get_market_orders_count_by_enchantment_level(&pool).await.unwrap();
+    let market_order_count_by_created_at = utils::db::get_market_orders_count_by_created_at(&pool).await.unwrap();
 
     let statistics = db::Statistics {
         market_order_count,
@@ -88,6 +90,7 @@ async fn get_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
         market_order_count_by_auction_type,
         market_order_count_by_quality_level,
         market_order_count_by_enchantment_level,
+        market_order_count_by_created_at,
     };
 
     Json(statistics).into_response()
@@ -177,4 +180,15 @@ async fn get_item_localizations(
     };
 
     Json(item).into_response()
+}
+
+async fn get_market_orders(State(pool): State<Pool<Postgres>>) -> Response<Body> {
+    let result = utils::db::get_market_orders(&pool).await;
+
+    let orders = match result {
+        Ok(orders) => orders,
+        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+    };
+
+    Json(orders).into_response()
 }
