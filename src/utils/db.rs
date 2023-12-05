@@ -225,11 +225,13 @@ pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<
     return sqlx::query_as!(
         MarketOrderCountByCreatedAt,
         "SELECT 
-            date_trunc('hour', created_at) as created_at, 
+            date_trunc('hour', updated_at) as updated_at, 
             COUNT(*) as count 
-        FROM market_order 
-            GROUP BY date_trunc('hour', created_at) 
-            ORDER BY created_at DESC"
+        FROM market_order
+            WHERE expires_at > NOW()
+            AND updated_at > NOW() - INTERVAL '1 day'
+            GROUP BY date_trunc('hour', updated_at) 
+            ORDER BY updated_at DESC"
     )
     .fetch_all(pool)
     .await;
