@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            date_trunc('minute', created_at) as created_at, \n            COUNT(*) as count \n        FROM market_order \n            GROUP BY date_trunc('minute', created_at) \n            ORDER BY created_at DESC",
+  "query": "SELECT \n            date_trunc('hour', created_at) as created_at, \n            COUNT(*) as count \n        FROM market_order \n            GROUP BY date_trunc('hour', created_at) \n            ORDER BY created_at DESC",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       null
     ]
   },
-  "hash": "f6404af806ad4f6babc63f6c6fd80e954533b1ce64ba28d091b57e08a1ac2d4a"
+  "hash": "b7736f30d91608f144ae72c898f9341dc483b6b2cadcde241fe4e33edb34c549"
 }
