@@ -73,7 +73,7 @@ pub struct Statistics {
     pub market_order_count_by_auction_type: Vec<MarketOrderCountByAuctionType>,
     pub market_order_count_by_quality_level: Vec<MarketOrderCountByQualityLevel>,
     pub market_order_count_by_enchantment_level: Vec<MarketOrderCountByEnchantmentLevel>,
-    pub market_order_count_by_created_at: Vec<MarketOrderCountByCreatedAt>,
+    pub market_order_count_by_updated_at: Vec<MarketOrderCountByUpdatedAt>,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
@@ -107,7 +107,7 @@ pub struct MarketOrderCountByEnchantmentLevel {
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
-pub struct MarketOrderCountByCreatedAt {
+pub struct MarketOrderCountByUpdatedAt {
     pub updated_at: Option<chrono::NaiveDateTime>,
     pub count: Option<i64>,
 }

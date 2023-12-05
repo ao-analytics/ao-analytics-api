@@ -1,6 +1,6 @@
 use sqlx::PgPool;
 
-use crate::models::db::{self, MarketOrderCountByCreatedAt};
+use crate::models::db::{self, MarketOrderCountByUpdatedAt};
 
 pub async fn search_items_by_localized_name(
     pool: &PgPool,
@@ -221,9 +221,9 @@ pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sq
     .await;
 }
 
-pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<MarketOrderCountByCreatedAt>, sqlx::Error> {
+pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<MarketOrderCountByUpdatedAt>, sqlx::Error> {
     return sqlx::query_as!(
-        MarketOrderCountByCreatedAt,
+        MarketOrderCountByUpdatedAt,
         "SELECT 
             date_trunc('hour', updated_at) as updated_at, 
             COUNT(*) as count 
