@@ -90,7 +90,7 @@ async fn get_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
         market_order_count_by_auction_type,
         market_order_count_by_quality_level,
         market_order_count_by_enchantment_level,
-        market_order_count_by_created_at,
+        market_order_count_by_updated_at: market_order_count_by_created_at,
     };
 
     Json(statistics).into_response()
