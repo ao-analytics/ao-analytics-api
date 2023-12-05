@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            date_trunc('minute', created_at) as created_at, \n            COUNT(*) as count \n        FROM market_order \n            GROUP BY date_trunc('minute', created_at) \n            ORDER BY created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "f6404af806ad4f6babc63f6c6fd80e954533b1ce64ba28d091b57e08a1ac2d4a"
+}
