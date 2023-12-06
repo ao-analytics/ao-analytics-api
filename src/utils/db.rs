@@ -144,15 +144,10 @@ pub async fn get_localized_descriptions_by_unique_name(pool: &PgPool, unique_nam
     .await;
 }
 
-pub async fn get_market_orders_count(pool: &PgPool) -> Option<i64> {
-    let result = sqlx::query!("SELECT COUNT(*) FROM market_order")
+pub async fn get_market_orders_count(pool: &PgPool) -> Result<db::MarketOrderCount, sqlx::Error> {
+    return sqlx::query_as!(db::MarketOrderCount, "SELECT COUNT(*) as count FROM market_order")
         .fetch_one(pool)
         .await;
-
-    return match result {
-        Ok(result) => result.count,
-        Err(_) => None,
-    };
 }
 
 pub async fn get_market_orders_count_by_item(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByItem>, sqlx::Error> {
@@ -182,24 +177,6 @@ pub async fn get_market_orders_count_by_auction_type(pool: &PgPool) -> Result<Ve
     .await;
 }
 
-pub async fn get_market_orders_count_by_quality_level(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByQualityLevel>, sqlx::Error> {
-    return sqlx::query_as!(
-        db::MarketOrderCountByQualityLevel,
-        "SELECT quality_level, COUNT(*) as count FROM market_order GROUP BY quality_level ORDER BY count DESC"
-    )
-    .fetch_all(pool)
-    .await;
-}
-
-pub async fn get_market_orders_count_by_enchantment_level(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByEnchantmentLevel>, sqlx::Error> {
-    return sqlx::query_as!(
-        db::MarketOrderCountByEnchantmentLevel,
-        "SELECT enchantment_level, COUNT(*) as count FROM market_order GROUP BY enchantment_level ORDER BY count DESC"
-    )
-    .fetch_all(pool)
-    .await;
-}
-
 pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrder,
@@ -221,7 +198,7 @@ pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sq
     .await;
 }
 
-pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<MarketOrderCountByUpdatedAt>, sqlx::Error> {
+pub async fn get_market_orders_count_by_updated_at(pool: &PgPool) -> Result<Vec<MarketOrderCountByUpdatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         MarketOrderCountByUpdatedAt,
         "SELECT 
@@ -229,7 +206,6 @@ pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<
             COUNT(*) as count 
         FROM market_order
             WHERE expires_at > NOW()
-            AND updated_at > NOW() - INTERVAL '1 day'
             GROUP BY date_trunc('hour', updated_at) 
             ORDER BY updated_at DESC"
     )
