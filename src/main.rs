@@ -59,7 +59,7 @@ async fn main() {
         .route("/", get(get_market_orders));
 
     let routes = Router::new()
-        .nest("/item", item_routes)
+        .nest("/items", item_routes)
         .nest("/statistics", statistics_routes)
         .nest("/orders", order_routes);
 
