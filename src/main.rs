@@ -6,12 +6,13 @@ use std::collections::HashMap;
 use axum::{
     body::Body,
     extract::{Path, Query, State},
-    http::StatusCode,
+    http::{StatusCode, Method},
     response::{IntoResponse, Response},
     routing::get,
     Json, Router,
 };
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use tower_http::cors::{Any, CorsLayer};
 
 mod models;
 use models::db;
@@ -36,12 +37,32 @@ async fn main() {
         .await
         .unwrap();
 
+    let cors = CorsLayer::new()
+        // allow `GET` and `POST` when accessing the resource
+        .allow_methods([Method::GET, Method::POST])
+        // allow requests from any origin
+        .allow_origin(Any);
+
+    let item_routes = Router::new()
+        .route("/:id", get(search_items))
+        .route("/:id/localizations", get(get_item_localizations))
+        .route("/:id/orders", get(get_item_market_orders));
+
+    let statistics_routes = Router::new()
+        .route("/orders/item", get(get_item_statistics))
+        .route("/orders/location", get(get_location_statistics))
+        .route("/orders/auction_type", get(get_auction_type_statistics))
+        .route("/orders/hourly", get(get_market_order_statistics))
+        .route("/orders/count", get(get_market_order_count));
+
+    let order_routes = Router::new()
+        .route("/", get(get_market_orders));
+
     let app = Router::new()
-        .route("/items/:id", get(search_items))
-        .route("/items/:id/localizations", get(get_item_localizations))
-        .route("/items/:id/orders", get(get_item_market_orders))
-        .route("/statistics", get(get_statistics))
-        .route("/orders", get(get_market_orders))
+        .nest("/item", item_routes)
+        .nest("/statistics", statistics_routes)
+        .nest("/orders", order_routes)
+        .layer(cors)
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", dotenv!("PORT")))
@@ -74,26 +95,34 @@ async fn search_items(
     Json(result).into_response()
 }
 
-async fn get_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let market_order_count = utils::db::get_market_orders_count(&pool).await;
+async fn get_item_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
     let market_order_count_by_item = utils::db::get_market_orders_count_by_item(&pool).await.unwrap();
+
+    Json(market_order_count_by_item).into_response()
+}
+
+async fn get_location_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
     let market_order_count_by_location = utils::db::get_market_orders_count_by_location(&pool).await.unwrap();
+
+    Json(market_order_count_by_location).into_response()
+}
+
+async fn get_auction_type_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
     let market_order_count_by_auction_type = utils::db::get_market_orders_count_by_auction_type(&pool).await.unwrap();
-    let market_order_count_by_quality_level = utils::db::get_market_orders_count_by_quality_level(&pool).await.unwrap();
-    let market_order_count_by_enchantment_level = utils::db::get_market_orders_count_by_enchantment_level(&pool).await.unwrap();
-    let market_order_count_by_created_at = utils::db::get_market_orders_count_by_created_at(&pool).await.unwrap();
 
-    let statistics = db::Statistics {
-        market_order_count,
-        market_order_count_by_item,
-        market_order_count_by_location,
-        market_order_count_by_auction_type,
-        market_order_count_by_quality_level,
-        market_order_count_by_enchantment_level,
-        market_order_count_by_updated_at: market_order_count_by_created_at,
-    };
+    Json(market_order_count_by_auction_type).into_response()
+}
 
-    Json(statistics).into_response()
+async fn get_market_order_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
+    let market_order_count_by_updated_at = utils::db::get_market_orders_count_by_updated_at(&pool).await.unwrap();
+
+    Json(market_order_count_by_updated_at).into_response()
+}
+
+async fn get_market_order_count(State(pool): State<Pool<Postgres>>) -> Response<Body> {
+    let market_order_count = utils::db::get_market_orders_count(&pool).await.unwrap();
+
+    Json(market_order_count).into_response()
 }
 
 async fn get_item_market_orders(

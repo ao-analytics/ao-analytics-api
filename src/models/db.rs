@@ -65,15 +65,9 @@ pub struct MarketOrder {
     pub updated_at: chrono::NaiveDateTime,
 }
 
-#[derive(serde::Serialize)]
-pub struct Statistics {
-    pub market_order_count: Option<i64>,
-    pub market_order_count_by_item: Vec<MarketOrderCountByItem>,
-    pub market_order_count_by_location: Vec<MarketOrderCountByLocation>,
-    pub market_order_count_by_auction_type: Vec<MarketOrderCountByAuctionType>,
-    pub market_order_count_by_quality_level: Vec<MarketOrderCountByQualityLevel>,
-    pub market_order_count_by_enchantment_level: Vec<MarketOrderCountByEnchantmentLevel>,
-    pub market_order_count_by_updated_at: Vec<MarketOrderCountByUpdatedAt>,
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct MarketOrderCount {
+    pub count: Option<i64>,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]

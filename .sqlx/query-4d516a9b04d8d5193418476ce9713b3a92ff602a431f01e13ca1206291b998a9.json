@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            date_trunc('hour', updated_at) as updated_at, \n            COUNT(*) as count \n        FROM market_order\n            WHERE expires_at > NOW()\n            GROUP BY date_trunc('hour', updated_at) \n            ORDER BY updated_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "updated_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "4d516a9b04d8d5193418476ce9713b3a92ff602a431f01e13ca1206291b998a9"
+}
