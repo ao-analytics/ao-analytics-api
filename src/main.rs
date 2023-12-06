@@ -58,10 +58,13 @@ async fn main() {
     let order_routes = Router::new()
         .route("/", get(get_market_orders));
 
-    let app = Router::new()
+    let routes = Router::new()
         .nest("/item", item_routes)
         .nest("/statistics", statistics_routes)
-        .nest("/orders", order_routes)
+        .nest("/orders", order_routes);
+
+    let app = Router::new()
+        .nest("/api", routes)
         .layer(cors)
         .with_state(pool);
 
