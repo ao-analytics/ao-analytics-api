@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            location.name as location, \n            quality_level, \n            enchantment_level, \n            unit_price_silver, \n            amount, \n            auction_type, \n            expires_at, \n            updated_at \n        FROM market_order, location \n            WHERE location_id = location.id\n            AND expires_at > NOW()\n            ORDER BY unit_price_silver ASC",
+  "query": "SELECT \n            location.name as location, \n            quality_level, \n            enchantment_level, \n            unit_price_silver, \n            amount, \n            auction_type, \n            expires_at, \n            updated_at \n        FROM \n            market_order, location \n        WHERE \n            location_id = location.id\n            AND expires_at > NOW()\n        ORDER BY\n            unit_price_silver ASC",
   "describe": {
     "columns": [
       {
@@ -58,5 +58,5 @@
       false
     ]
   },
-  "hash": "bbe8717111f9f907eb2745d1a799c0ad7e1a27b016d18b611a50cac00dfee4d1"
+  "hash": "517d9752df1fb0031613432b8ef0872c69342a0a0e3753747d8ef6969e606860"
 }
