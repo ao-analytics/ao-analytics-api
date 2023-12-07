@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n            DATE_TRUNC('minute', created_at) - (EXTRACT(MINUTE FROM created_at)::INT % 15) * INTERVAL '1 minute' AS created_at,\n            COUNT(*) as count\n        FROM\n            market_order\n        WHERE \n            expires_at > NOW()\n        GROUP BY\n            DATE_TRUNC('minute', created_at) - (EXTRACT(MINUTE FROM created_at)::INT % 15) * INTERVAL '1 minute'\n        ORDER BY\n            created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "285f5b1ff532862366b6a31f74fa437c03feb615382630402de0c71467904297"
+}
