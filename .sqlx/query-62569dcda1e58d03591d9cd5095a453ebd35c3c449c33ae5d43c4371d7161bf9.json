@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            item_unique_name, \n            en_us, \n            de_de, \n            fr_fr, \n            ru_ru, \n            pl_pl, \n            es_es, \n            pt_br, \n            it_it, \n            zh_cn, \n            ko_kr, \n            ja_jp, \n            zh_tw, \n            id_id \n        FROM localized_description \n            WHERE item_unique_name = $1",
+  "query": "SELECT \n            item_unique_name, \n            en_us, \n            de_de, \n            fr_fr, \n            ru_ru, \n            pl_pl, \n            es_es, \n            pt_br, \n            it_it, \n            zh_cn, \n            ko_kr, \n            ja_jp, \n            zh_tw, \n            id_id \n        FROM \n            localized_description \n        WHERE \n            item_unique_name = $1",
   "describe": {
     "columns": [
       {
@@ -96,5 +96,5 @@
       false
     ]
   },
-  "hash": "a538bb96612d3e7c2782736ef60c470e2aaef0cd2c62b88e50afe64d64a1b195"
+  "hash": "62569dcda1e58d03591d9cd5095a453ebd35c3c449c33ae5d43c4371d7161bf9"
 }

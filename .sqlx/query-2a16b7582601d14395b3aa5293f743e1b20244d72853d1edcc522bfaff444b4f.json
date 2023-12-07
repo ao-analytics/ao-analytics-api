@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT auction_type, COUNT(*) as count FROM market_order GROUP BY auction_type ORDER BY count DESC",
+  "query": "SELECT \n            auction_type, \n            COUNT(*) as count \n        FROM \n            market_order \n        GROUP BY \n            auction_type \n        ORDER BY \n            count DESC",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       null
     ]
   },
-  "hash": "e4251e7e103f89ad07244bf17a716159fca17599b947ee2c4025c9852aa5847a"
+  "hash": "2a16b7582601d14395b3aa5293f743e1b20244d72853d1edcc522bfaff444b4f"
 }

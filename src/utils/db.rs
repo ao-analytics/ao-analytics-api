@@ -26,8 +26,10 @@ pub async fn search_items_by_localized_name(
             ja_jp,
             zh_tw,
             id_id
-        FROM localized_name
-            WHERE ( $1 = 'en_us' AND en_us ILIKE $2 )
+        FROM 
+            localized_name
+        WHERE 
+            ( $1 = 'en_us' AND en_us ILIKE $2 )
             OR ( $1 = 'de_de' AND de_de ILIKE $2 )
             OR ( $1 = 'fr_fr' AND fr_fr ILIKE $2 )
             OR ( $1 = 'ru_ru' AND ru_ru ILIKE $2 )
@@ -40,8 +42,9 @@ pub async fn search_items_by_localized_name(
             OR ( $1 = 'ja_jp' AND ja_jp ILIKE $2 )
             OR ( $1 = 'zh_tw' AND zh_tw ILIKE $2 )
             OR ( $1 = 'id_id' AND id_id ILIKE $2 )
-            ORDER BY en_us ASC
-            LIMIT 10",
+        ORDER BY 
+            en_us ASC
+        LIMIT 10",
         lang,
         item
     )
@@ -70,16 +73,20 @@ pub async fn query_market_orders(
             auction_type, 
             expires_at, 
             updated_at 
-        FROM market_order, location 
-            WHERE location_id = location.id
+        FROM 
+            market_order, location 
+        WHERE 
+            location_id = location.id
             AND expires_at > NOW()
             AND item_unique_name = $1
             AND ( $2::TEXT IS NULL OR location.id = $2 )
             AND ( $3::TEXT IS NULL OR auction_type = $3 )
             AND ( $4::INT IS NULL OR quality_level = $4 )
             AND ( $5::INT IS NULL OR enchantment_level = $5 )
-            ORDER BY unit_price_silver ASC
-            LIMIT $6 OFFSET $7",
+        ORDER BY 
+            unit_price_silver ASC
+        LIMIT $6 
+        OFFSET $7",
         unique_name,
         location_id,
         auction_type,
@@ -92,7 +99,10 @@ pub async fn query_market_orders(
     .await;
 }
 
-pub async fn get_localized_names_by_unique_name(pool: &PgPool, unique_name: &String) -> Result<db::LocalizedName, sqlx::Error> {
+pub async fn get_localized_names_by_unique_name(
+    pool: &PgPool,
+    unique_name: &String,
+) -> Result<db::LocalizedName, sqlx::Error> {
     return sqlx::query_as!(
         db::LocalizedName,
         "SELECT 
@@ -118,7 +128,10 @@ pub async fn get_localized_names_by_unique_name(pool: &PgPool, unique_name: &Str
     .await;
 }
 
-pub async fn get_localized_descriptions_by_unique_name(pool: &PgPool, unique_name: &String) -> Result<db::LocalizedDescription, sqlx::Error> {
+pub async fn get_localized_descriptions_by_unique_name(
+    pool: &PgPool,
+    unique_name: &String,
+) -> Result<db::LocalizedDescription, sqlx::Error> {
     return sqlx::query_as!(
         db::LocalizedDescription,
         "SELECT 
@@ -136,8 +149,10 @@ pub async fn get_localized_descriptions_by_unique_name(pool: &PgPool, unique_nam
             ja_jp, 
             zh_tw, 
             id_id 
-        FROM localized_description 
-            WHERE item_unique_name = $1",
+        FROM 
+            localized_description 
+        WHERE 
+            item_unique_name = $1",
         unique_name
     )
     .fetch_one(pool)
@@ -145,33 +160,72 @@ pub async fn get_localized_descriptions_by_unique_name(pool: &PgPool, unique_nam
 }
 
 pub async fn get_market_orders_count(pool: &PgPool) -> Result<db::MarketOrderCount, sqlx::Error> {
-    return sqlx::query_as!(db::MarketOrderCount, "SELECT COUNT(*) as count FROM market_order")
-        .fetch_one(pool)
-        .await;
+    return sqlx::query_as!(
+        db::MarketOrderCount,
+        "SELECT 
+            COUNT(*) as count
+        FROM 
+            market_order"
+    )
+    .fetch_one(pool)
+    .await;
 }
 
-pub async fn get_market_orders_count_by_item(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByItem>, sqlx::Error> {
+/*pub async fn get_market_orders_count_by_item(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByItem>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByItem,
-        "SELECT item_unique_name, COUNT(*) as count FROM market_order GROUP BY item_unique_name ORDER BY count DESC"
+        "SELECT 
+            item_unique_name, 
+            COUNT(*) as count 
+        FROM 
+            market_order 
+        GROUP BY 
+            item_unique_name 
+        ORDER BY 
+            count DESC"
     )
     .fetch_all(pool)
     .await;
-}
+}*/
 
-pub async fn get_market_orders_count_by_location(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByLocation>, sqlx::Error> {
+pub async fn get_market_orders_count_by_location(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByLocation>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByLocation,
-        "SELECT location.name as location, COUNT(*) as count FROM market_order, location WHERE location_id = location.id GROUP BY location.name ORDER BY count DESC"
+        "SELECT 
+            location.name as location, 
+            COUNT(*) as count 
+        FROM 
+            market_order, 
+            location 
+        WHERE 
+            location_id = location.id 
+        GROUP BY 
+            location.name 
+        ORDER BY
+            count DESC"
     )
     .fetch_all(pool)
     .await;
 }
 
-pub async fn get_market_orders_count_by_auction_type(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByAuctionType>, sqlx::Error> {
+pub async fn get_market_orders_count_by_auction_type(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByAuctionType>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByAuctionType,
-        "SELECT auction_type, COUNT(*) as count FROM market_order GROUP BY auction_type ORDER BY count DESC"
+        "SELECT 
+            auction_type, 
+            COUNT(*) as count 
+        FROM 
+            market_order 
+        GROUP BY 
+            auction_type 
+        ORDER BY 
+            count DESC"
     )
     .fetch_all(pool)
     .await;
@@ -189,27 +243,32 @@ pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sq
             auction_type, 
             expires_at, 
             updated_at 
-        FROM market_order, location 
-            WHERE location_id = location.id
+        FROM 
+            market_order, location 
+        WHERE 
+            location_id = location.id
             AND expires_at > NOW()
-            ORDER BY unit_price_silver ASC"
+        ORDER BY
+            unit_price_silver ASC"
     )
     .fetch_all(pool)
     .await;
 }
 
-pub async fn get_market_orders_count_by_updated_at(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByUpdatedAt>, sqlx::Error> {
+pub async fn get_market_orders_count_by_updated_at(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByUpdatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByUpdatedAt,
         "SELECT
-            DATE_TRUNC('minute', updated_at) - (EXTRACT(MINUTE FROM updated_at)::INT % 15) * INTERVAL '1 minute' AS updated_at,
+            DATE_TRUNC('hour', updated_at)  AS updated_at,
             COUNT(*) as count
         FROM
             market_order
         WHERE 
             expires_at > NOW()
         GROUP BY
-            DATE_TRUNC('minute', updated_at) - (EXTRACT(MINUTE FROM updated_at)::INT % 15) * INTERVAL '1 minute'
+            DATE_TRUNC('hour', updated_at)
         ORDER BY
             updated_at DESC"
     )
@@ -217,18 +276,20 @@ pub async fn get_market_orders_count_by_updated_at(pool: &PgPool) -> Result<Vec<
     .await;
 }
 
-pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByCreatedAt>, sqlx::Error> {
+pub async fn get_market_orders_count_by_created_at(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByCreatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByCreatedAt,
         "SELECT
-            DATE_TRUNC('minute', created_at) - (EXTRACT(MINUTE FROM created_at)::INT % 15) * INTERVAL '1 minute' AS created_at,
+            DATE_TRUNC('hour', created_at) AS created_at,
             COUNT(*) as count
         FROM
             market_order
         WHERE 
             expires_at > NOW()
         GROUP BY
-            DATE_TRUNC('minute', created_at) - (EXTRACT(MINUTE FROM created_at)::INT % 15) * INTERVAL '1 minute'
+            DATE_TRUNC('hour', created_at)
         ORDER BY
             created_at DESC"
     )
