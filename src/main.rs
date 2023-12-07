@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use axum::{
     body::Body,
     extract::{Path, Query, State},
-    http::{StatusCode, Method},
+    http::{Method, StatusCode},
     response::{IntoResponse, Response},
     routing::get,
     Json, Router,
@@ -39,7 +39,7 @@ async fn main() {
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
-        .allow_methods([Method::GET, Method::POST])
+        .allow_methods([Method::GET])
         // allow requests from any origin
         .allow_origin(Any);
 
@@ -49,14 +49,10 @@ async fn main() {
         .route("/:id/orders", get(get_item_market_orders));
 
     let statistics_routes = Router::new()
-        .route("/orders/item", get(get_item_statistics))
-        .route("/orders/location", get(get_location_statistics))
-        .route("/orders/auction_type", get(get_auction_type_statistics))
-        .route("/orders/hourly", get(get_market_order_statistics))
+        .route("/orders", get(get_market_order_statistics))
         .route("/orders/count", get(get_market_order_count));
 
-    let order_routes = Router::new()
-        .route("/", get(get_market_orders));
+    let order_routes = Router::new().route("/", get(get_market_orders));
 
     let routes = Router::new()
         .nest("/items", item_routes)
@@ -82,7 +78,6 @@ async fn search_items(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-
     let lang = match query.get("lang") {
         Some(lang) => lang,
         None => "en_us",
@@ -98,28 +93,52 @@ async fn search_items(
     Json(result).into_response()
 }
 
-async fn get_item_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let market_order_count_by_item = utils::db::get_market_orders_count_by_item(&pool).await.unwrap();
+async fn get_market_order_statistics(
+    Query(query): Query<HashMap<String, String>>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
 
-    Json(market_order_count_by_item).into_response()
-}
+    let group_by = match query.get("group_by") {
+        Some(group_by) => group_by,
+        None => return StatusCode::BAD_REQUEST.into_response(),
+    };
 
-async fn get_location_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let market_order_count_by_location = utils::db::get_market_orders_count_by_location(&pool).await.unwrap();
+    if group_by == "updated_at" {
+        let market_order_count_by_updated_at =
+            utils::db::get_market_orders_count_by_updated_at(&pool)
+                .await
+                .unwrap();
 
-    Json(market_order_count_by_location).into_response()
-}
+        return Json(market_order_count_by_updated_at).into_response();
+    }
 
-async fn get_auction_type_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let market_order_count_by_auction_type = utils::db::get_market_orders_count_by_auction_type(&pool).await.unwrap();
+    if group_by == "created_at" {
+        let market_order_count_by_created_at =
+            utils::db::get_market_orders_count_by_created_at(&pool)
+                .await
+                .unwrap();
 
-    Json(market_order_count_by_auction_type).into_response()
-}
+        return Json(market_order_count_by_created_at).into_response();
+    }
 
-async fn get_market_order_statistics(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let market_order_count_by_updated_at = utils::db::get_market_orders_count_by_updated_at(&pool).await.unwrap();
+    if group_by == "location" {
+        let market_order_count_by_location = utils::db::get_market_orders_count_by_location(&pool)
+            .await
+            .unwrap();
 
-    Json(market_order_count_by_updated_at).into_response()
+        return Json(market_order_count_by_location).into_response();
+    }
+
+    if group_by == "auction_type" {
+        let market_orders_count_by_auction_type =
+            utils::db::get_market_orders_count_by_auction_type(&pool)
+                .await
+                .unwrap();
+
+        return Json(market_orders_count_by_auction_type).into_response();
+    }
+
+    return StatusCode::BAD_REQUEST.into_response();
 }
 
 async fn get_market_order_count(State(pool): State<Pool<Postgres>>) -> Response<Body> {
@@ -133,13 +152,12 @@ async fn get_item_market_orders(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-
     let location_id: Option<String> = match query.get("location_id") {
         Some(location_id) => Some(location_id.to_string()),
         None => None,
     };
 
-    let auction_type: Option<String> = match query.get("auction_type")  {
+    let auction_type: Option<String> = match query.get("auction_type") {
         Some(auction_type) => Some(auction_type.to_string()),
         None => None,
     };
@@ -176,7 +194,17 @@ async fn get_item_market_orders(
         None => 0,
     };
 
-    let result = utils::db::query_market_orders(&pool, &unique_name, location_id, auction_type, quality_level, enchantment_level, limit, offset).await;
+    let result = utils::db::query_market_orders(
+        &pool,
+        &unique_name,
+        location_id,
+        auction_type,
+        quality_level,
+        enchantment_level,
+        limit,
+        offset,
+    )
+    .await;
 
     let orders = match result {
         Ok(orders) => orders,
@@ -190,7 +218,6 @@ async fn get_item_localizations(
     Path(unique_name): Path<String>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-
     let result = utils::db::get_localized_names_by_unique_name(&pool, &unique_name).await;
 
     let name = match result {

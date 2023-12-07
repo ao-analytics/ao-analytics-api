@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            date_trunc('hour', updated_at) as updated_at, \n            COUNT(*) as count \n        FROM market_order\n            WHERE expires_at > NOW()\n            GROUP BY date_trunc('hour', updated_at) \n            ORDER BY updated_at DESC",
+  "query": "SELECT \n            date_trunc('minute', updated_at) as updated_at, \n            COUNT(*) as count \n        FROM market_order\n            WHERE expires_at > NOW()\n            GROUP BY date_trunc('minute', updated_at) \n            ORDER BY updated_at DESC",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       null
     ]
   },
-  "hash": "4d516a9b04d8d5193418476ce9713b3a92ff602a431f01e13ca1206291b998a9"
+  "hash": "164352cf2c1fd20245ac1e202ec41b4fe0d97245dc757acedf16cd87142808d8"
 }

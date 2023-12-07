@@ -1,6 +1,6 @@
 use sqlx::PgPool;
 
-use crate::models::db::{self, MarketOrderCountByUpdatedAt};
+use crate::models::db;
 
 pub async fn search_items_by_localized_name(
     pool: &PgPool,
@@ -198,16 +198,31 @@ pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sq
     .await;
 }
 
-pub async fn get_market_orders_count_by_updated_at(pool: &PgPool) -> Result<Vec<MarketOrderCountByUpdatedAt>, sqlx::Error> {
+pub async fn get_market_orders_count_by_updated_at(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByUpdatedAt>, sqlx::Error> {
     return sqlx::query_as!(
-        MarketOrderCountByUpdatedAt,
+        db::MarketOrderCountByUpdatedAt,
         "SELECT 
-            date_trunc('hour', updated_at) as updated_at, 
+            date_trunc('minute', updated_at) as updated_at, 
             COUNT(*) as count 
         FROM market_order
             WHERE expires_at > NOW()
-            GROUP BY date_trunc('hour', updated_at) 
+            GROUP BY date_trunc('minute', updated_at) 
             ORDER BY updated_at DESC"
+    )
+    .fetch_all(pool)
+    .await;
+}
+
+pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByCreatedAt>, sqlx::Error> {
+    return sqlx::query_as!(
+        db::MarketOrderCountByCreatedAt,
+        "SELECT 
+            date_trunc('minute', created_at) as created_at, 
+            COUNT(*) as count 
+        FROM market_order
+            WHERE expires_at > NOW()
+            GROUP BY date_trunc('minute', created_at) 
+            ORDER BY created_at DESC"
     )
     .fetch_all(pool)
     .await;
