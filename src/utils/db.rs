@@ -201,13 +201,17 @@ pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sq
 pub async fn get_market_orders_count_by_updated_at(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByUpdatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByUpdatedAt,
-        "SELECT 
-            date_trunc('minute', updated_at) as updated_at, 
-            COUNT(*) as count 
-        FROM market_order
-            WHERE expires_at > NOW()
-            GROUP BY date_trunc('minute', updated_at) 
-            ORDER BY updated_at DESC"
+        "SELECT
+            DATE_TRUNC('minute', updated_at) - (EXTRACT(MINUTE FROM updated_at)::INT % 15) * INTERVAL '1 minute' AS updated_at,
+            COUNT(*) as count
+        FROM
+            market_order
+        WHERE 
+            expires_at > NOW()
+        GROUP BY
+            DATE_TRUNC('minute', updated_at) - (EXTRACT(MINUTE FROM updated_at)::INT % 15) * INTERVAL '1 minute'
+        ORDER BY
+            updated_at DESC"
     )
     .fetch_all(pool)
     .await;
@@ -216,13 +220,17 @@ pub async fn get_market_orders_count_by_updated_at(pool: &PgPool) -> Result<Vec<
 pub async fn get_market_orders_count_by_created_at(pool: &PgPool) -> Result<Vec<db::MarketOrderCountByCreatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByCreatedAt,
-        "SELECT 
-            date_trunc('minute', created_at) as created_at, 
-            COUNT(*) as count 
-        FROM market_order
-            WHERE expires_at > NOW()
-            GROUP BY date_trunc('minute', created_at) 
-            ORDER BY created_at DESC"
+        "SELECT
+            DATE_TRUNC('minute', created_at) - (EXTRACT(MINUTE FROM created_at)::INT % 15) * INTERVAL '1 minute' AS created_at,
+            COUNT(*) as count
+        FROM
+            market_order
+        WHERE 
+            expires_at > NOW()
+        GROUP BY
+            DATE_TRUNC('minute', created_at) - (EXTRACT(MINUTE FROM created_at)::INT % 15) * INTERVAL '1 minute'
+        ORDER BY
+            created_at DESC"
     )
     .fetch_all(pool)
     .await;
