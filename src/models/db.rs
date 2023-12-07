@@ -105,3 +105,9 @@ pub struct MarketOrderCountByUpdatedAt {
     pub updated_at: Option<chrono::NaiveDateTime>,
     pub count: Option<i64>,
 }
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct MarketOrderCountByCreatedAt {
+    pub created_at: Option<chrono::NaiveDateTime>,
+    pub count: Option<i64>,
+}
