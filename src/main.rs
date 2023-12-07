@@ -97,7 +97,6 @@ async fn get_market_order_statistics(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-
     let group_by = match query.get("group_by") {
         Some(group_by) => group_by,
         None => return StatusCode::BAD_REQUEST.into_response(),
@@ -180,7 +179,13 @@ async fn get_item_market_orders(
 
     let limit = match query.get("limit") {
         Some(limit) => match limit.parse::<i64>() {
-            Ok(limit) => limit,
+            Ok(limit) => {
+                if limit > 100 {
+                    100
+                } else {
+                    limit
+                }
+            }
             Err(_) => return StatusCode::BAD_REQUEST.into_response(),
         },
         None => 100,
@@ -196,7 +201,7 @@ async fn get_item_market_orders(
 
     let result = utils::db::query_market_orders(
         &pool,
-        &unique_name,
+        Some(unique_name),
         location_id,
         auction_type,
         quality_level,
@@ -241,8 +246,74 @@ async fn get_item_localizations(
     Json(item).into_response()
 }
 
-async fn get_market_orders(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let result = utils::db::get_market_orders(&pool).await;
+async fn get_market_orders(
+    Query(query): Query<HashMap<String, String>>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
+    let unique_name: Option<String> = match query.get("unique_name") {
+        Some(unique_name) => Some(unique_name.to_string()),
+        None => None,
+    };
+
+    let location_id: Option<String> = match query.get("location_id") {
+        Some(location_id) => Some(location_id.to_string()),
+        None => None,
+    };
+
+    let auction_type: Option<String> = match query.get("auction_type") {
+        Some(auction_type) => Some(auction_type.to_string()),
+        None => None,
+    };
+
+    let quality_level: Option<i32> = match query.get("quality_level") {
+        Some(quality_level) => match quality_level.parse::<i32>() {
+            Ok(quality_level) => Some(quality_level),
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+
+    let enchantment_level: Option<i32> = match query.get("enchantment_level") {
+        Some(enchantment_level) => match enchantment_level.parse::<i32>() {
+            Ok(enchantment_level) => Some(enchantment_level),
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+
+    let limit = match query.get("limit") {
+        Some(limit) => match limit.parse::<i64>() {
+            Ok(limit) => {
+                if limit > 100 {
+                    100
+                } else {
+                    limit
+                }
+            }
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => 100,
+    };
+
+    let offset = match query.get("offset") {
+        Some(offset) => match offset.parse::<i64>() {
+            Ok(offset) => offset,
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => 0,
+    };
+
+    let result = utils::db::query_market_orders(
+        &pool,
+        unique_name,
+        location_id,
+        auction_type,
+        quality_level,
+        enchantment_level,
+        limit,
+        offset,
+    )
+    .await;
 
     let orders = match result {
         Ok(orders) => orders,

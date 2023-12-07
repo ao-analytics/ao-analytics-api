@@ -54,7 +54,7 @@ pub async fn search_items_by_localized_name(
 
 pub async fn query_market_orders(
     pool: &PgPool,
-    unique_name: &String,
+    unique_name: Option<String>,
     location_id: Option<String>,
     auction_type: Option<String>,
     quality_level: Option<i32>,
@@ -78,7 +78,7 @@ pub async fn query_market_orders(
         WHERE 
             location_id = location.id
             AND expires_at > NOW()
-            AND item_unique_name = $1
+            AND ( $1::TEXT IS NULL OR item_unique_name = $1 )
             AND ( $2::TEXT IS NULL OR location.id = $2 )
             AND ( $3::TEXT IS NULL OR auction_type = $3 )
             AND ( $4::INT IS NULL OR quality_level = $4 )
@@ -171,25 +171,6 @@ pub async fn get_market_orders_count(pool: &PgPool) -> Result<db::MarketOrderCou
     .await;
 }
 
-/*pub async fn get_market_orders_count_by_item(
-    pool: &PgPool,
-) -> Result<Vec<db::MarketOrderCountByItem>, sqlx::Error> {
-    return sqlx::query_as!(
-        db::MarketOrderCountByItem,
-        "SELECT 
-            item_unique_name, 
-            COUNT(*) as count 
-        FROM 
-            market_order 
-        GROUP BY 
-            item_unique_name 
-        ORDER BY 
-            count DESC"
-    )
-    .fetch_all(pool)
-    .await;
-}*/
-
 pub async fn get_market_orders_count_by_location(
     pool: &PgPool,
 ) -> Result<Vec<db::MarketOrderCountByLocation>, sqlx::Error> {
@@ -226,30 +207,6 @@ pub async fn get_market_orders_count_by_auction_type(
             auction_type 
         ORDER BY 
             count DESC"
-    )
-    .fetch_all(pool)
-    .await;
-}
-
-pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
-    return sqlx::query_as!(
-        db::MarketOrder,
-        "SELECT 
-            location.name as location, 
-            quality_level, 
-            enchantment_level, 
-            unit_price_silver, 
-            amount, 
-            auction_type, 
-            expires_at, 
-            updated_at 
-        FROM 
-            market_order, location 
-        WHERE 
-            location_id = location.id
-            AND expires_at > NOW()
-        ORDER BY
-            unit_price_silver ASC"
     )
     .fetch_all(pool)
     .await;
@@ -296,3 +253,46 @@ pub async fn get_market_orders_count_by_created_at(
     .fetch_all(pool)
     .await;
 }
+
+/*pub async fn get_market_orders_count_by_item(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByItem>, sqlx::Error> {
+    return sqlx::query_as!(
+        db::MarketOrderCountByItem,
+        "SELECT 
+            item_unique_name, 
+            COUNT(*) as count 
+        FROM 
+            market_order 
+        GROUP BY 
+            item_unique_name 
+        ORDER BY 
+            count DESC"
+    )
+    .fetch_all(pool)
+    .await;
+}*/
+
+/*pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
+    return sqlx::query_as!(
+        db::MarketOrder,
+        "SELECT 
+            location.name as location, 
+            quality_level, 
+            enchantment_level, 
+            unit_price_silver, 
+            amount, 
+            auction_type, 
+            expires_at, 
+            updated_at 
+        FROM 
+            market_order, location 
+        WHERE 
+            location_id = location.id
+            AND expires_at > NOW()
+        ORDER BY
+            unit_price_silver ASC"
+    )
+    .fetch_all(pool)
+    .await;
+}*/
