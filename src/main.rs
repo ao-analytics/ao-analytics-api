@@ -38,9 +38,7 @@ async fn main() {
         .unwrap();
 
     let cors = CorsLayer::new()
-        // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET])
-        // allow requests from any origin
         .allow_origin(Any);
 
     let item_routes = Router::new()
@@ -109,6 +107,15 @@ async fn get_market_order_statistics(
                 .unwrap();
 
         return Json(market_order_count_by_updated_at).into_response();
+    }
+
+    if group_by.contains("updated_at") && group_by.contains("location") {
+        let market_order_count_by_updated_at_and_location =
+            utils::db::get_market_orders_count_by_updated_at_and_location(&pool)
+                .await
+                .unwrap();
+
+        return Json(market_order_count_by_updated_at_and_location).into_response();
     }
 
     if group_by == "created_at" {
