@@ -226,6 +226,33 @@ pub async fn get_market_orders_count_by_updated_at(
             expires_at > NOW()
         GROUP BY
             DATE_TRUNC('hour', updated_at)
+            
+        ORDER BY
+            updated_at DESC"
+    )
+    .fetch_all(pool)
+    .await;
+}
+
+
+pub async fn get_market_orders_count_by_updated_at_and_location(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByUpdatedAtAndLocation>, sqlx::Error> {
+    return sqlx::query_as!(
+        db::MarketOrderCountByUpdatedAtAndLocation,
+        "SELECT
+            DATE_TRUNC('hour', updated_at) AS updated_at,
+            location.name as location,
+            COUNT(*) as count
+        FROM
+            market_order,   
+            location
+        WHERE
+            location_id = location.id
+            AND expires_at > NOW()
+        GROUP BY
+            DATE_TRUNC('hour', updated_at),
+            location
         ORDER BY
             updated_at DESC"
     )

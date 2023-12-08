@@ -101,6 +101,13 @@ pub struct MarketOrderCountByEnchantmentLevel {
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
+pub struct MarketOrderCountByUpdatedAtAndLocation {
+    pub updated_at: Option<chrono::NaiveDateTime>,
+    pub location: String,
+    pub count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
 pub struct MarketOrderCountByUpdatedAt {
     pub updated_at: Option<chrono::NaiveDateTime>,
     pub count: Option<i64>,
