@@ -55,7 +55,9 @@ pub struct LocalizationResponse {
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct MarketOrder {
-    pub location: String,
+    pub id: i64,
+    pub item_unique_name: String,
+    pub location_id: String,
     pub quality_level: i32,
     pub enchantment_level: i32,
     pub unit_price_silver: i32,
@@ -63,6 +65,7 @@ pub struct MarketOrder {
     pub auction_type: String,
     pub expires_at: chrono::NaiveDateTime,
     pub updated_at: chrono::NaiveDateTime,
+    pub created_at: chrono::NaiveDateTime,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
@@ -117,4 +120,10 @@ pub struct MarketOrderCountByUpdatedAt {
 pub struct MarketOrderCountByCreatedAt {
     pub created_at: Option<chrono::NaiveDateTime>,
     pub count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct Location {
+    pub id: String,
+    pub name: String,
 }

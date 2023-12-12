@@ -52,10 +52,15 @@ async fn main() {
 
     let order_routes = Router::new().route("/", get(get_market_orders));
 
+    let location_routes = Router::new()
+        .route("/", get(get_locations))
+        .route("/:id", get(get_locations_by_id));
+
     let routes = Router::new()
         .nest("/items", item_routes)
         .nest("/statistics", statistics_routes)
-        .nest("/orders", order_routes);
+        .nest("/orders", order_routes)
+        .nest("/locations", location_routes);
 
     let app = Router::new()
         .nest("/api", routes)
@@ -257,7 +262,7 @@ async fn get_market_orders(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let unique_name: Option<String> = match query.get("unique_name") {
+    let unique_name: Option<String> = match query.get("item") {
         Some(unique_name) => Some(unique_name.to_string()),
         None => None,
     };
@@ -328,4 +333,40 @@ async fn get_market_orders(
     };
 
     Json(orders).into_response()
+}
+
+async fn get_locations(
+    Query(query): Query<HashMap<String, String>>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
+    let min_market_orders: Option<i32> = match query.get("min_market_orders") {
+        Some(min_market_orders) => match min_market_orders.parse::<i32>() {
+            Ok(min_market_orders) => Some(min_market_orders),
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+
+    let result = utils::db::query_locations(&pool, min_market_orders).await;
+
+    let locations = match result {
+        Ok(locations) => locations,
+        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+    };
+
+    Json(locations).into_response()
+}
+
+async fn get_locations_by_id(
+    Path(id): Path<String>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
+    let result = utils::db::get_locations_by_id(&pool, &id).await;
+
+    let locations = match result {
+        Ok(locations) => locations,
+        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+    };
+
+    Json(locations).into_response()
 }
