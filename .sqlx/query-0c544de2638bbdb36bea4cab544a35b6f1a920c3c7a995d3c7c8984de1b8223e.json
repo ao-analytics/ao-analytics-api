@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            DATE_TRUNC('hour', created_at) AS created_at,\n            COUNT(*) as count\n        FROM\n            market_order\n        WHERE \n            expires_at > NOW()\n        GROUP BY\n            DATE_TRUNC('hour', created_at)\n        ORDER BY\n            created_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "0c544de2638bbdb36bea4cab544a35b6f1a920c3c7a995d3c7c8984de1b8223e"
+}

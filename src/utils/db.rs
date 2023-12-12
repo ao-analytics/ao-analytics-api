@@ -65,14 +65,17 @@ pub async fn query_market_orders(
     return sqlx::query_as!(
         db::MarketOrder,
         "SELECT 
-            location.name as location, 
+            market_order.id,
+            location.id as location_id,
+            item_unique_name,
             quality_level, 
             enchantment_level, 
             unit_price_silver, 
             amount, 
             auction_type, 
             expires_at, 
-            updated_at 
+            updated_at,
+            created_at
         FROM 
             market_order, location 
         WHERE 
@@ -217,7 +220,7 @@ pub async fn get_market_orders_count_by_updated_at(
 ) -> Result<Vec<db::MarketOrderCountByUpdatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByUpdatedAt,
-        "SELECT
+        "SELECT 
             DATE_TRUNC('hour', updated_at)  AS updated_at,
             COUNT(*) as count
         FROM
@@ -234,13 +237,12 @@ pub async fn get_market_orders_count_by_updated_at(
     .await;
 }
 
-
 pub async fn get_market_orders_count_by_updated_at_and_location(
     pool: &PgPool,
 ) -> Result<Vec<db::MarketOrderCountByUpdatedAtAndLocation>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByUpdatedAtAndLocation,
-        "SELECT
+        "SELECT 
             DATE_TRUNC('hour', updated_at) AS updated_at,
             location.name as location,
             COUNT(*) as count
@@ -265,7 +267,7 @@ pub async fn get_market_orders_count_by_created_at(
 ) -> Result<Vec<db::MarketOrderCountByCreatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByCreatedAt,
-        "SELECT
+        "SELECT 
             DATE_TRUNC('hour', created_at) AS created_at,
             COUNT(*) as count
         FROM
@@ -281,45 +283,49 @@ pub async fn get_market_orders_count_by_created_at(
     .await;
 }
 
-/*pub async fn get_market_orders_count_by_item(
+pub async fn query_locations(
     pool: &PgPool,
-) -> Result<Vec<db::MarketOrderCountByItem>, sqlx::Error> {
+    min_market_orders: Option<i32>,
+) -> Result<Vec<db::Location>, sqlx::Error> {
     return sqlx::query_as!(
-        db::MarketOrderCountByItem,
+        db::Location,
         "SELECT 
-            item_unique_name, 
-            COUNT(*) as count 
-        FROM 
-            market_order 
-        GROUP BY 
-            item_unique_name 
-        ORDER BY 
-            count DESC"
-    )
-    .fetch_all(pool)
-    .await;
-}*/
-
-/*pub async fn get_market_orders(pool: &PgPool) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
-    return sqlx::query_as!(
-        db::MarketOrder,
-        "SELECT 
-            location.name as location, 
-            quality_level, 
-            enchantment_level, 
-            unit_price_silver, 
-            amount, 
-            auction_type, 
-            expires_at, 
-            updated_at 
-        FROM 
-            market_order, location 
+            location.id, 
+            location.name
+        FROM
+            location
+        LEFT JOIN (
+            SELECT 
+                location_id, 
+                COUNT(*) as count 
+            FROM 
+                market_order 
+            GROUP BY 
+                location_id
+        ) AS market_order_count ON market_order_count.location_id = location.id
         WHERE 
-            location_id = location.id
-            AND expires_at > NOW()
-        ORDER BY
-            unit_price_silver ASC"
+            ( $1::INT IS NULL OR $1 <= COALESCE(market_order_count.count, 0) )",
+        min_market_orders
     )
     .fetch_all(pool)
     .await;
-}*/
+}
+
+pub async fn get_locations_by_id(
+    pool: &PgPool,
+    location_id: &String,
+) -> Result<db::Location, sqlx::Error> {
+    return sqlx::query_as!(
+        db::Location,
+        "SELECT 
+            location.id, 
+            location.name
+        FROM
+            location
+        WHERE 
+            location.id = $1",
+        location_id
+    )
+    .fetch_one(pool)
+    .await;
+}
