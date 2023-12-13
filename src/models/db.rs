@@ -127,3 +127,22 @@ pub struct Location {
     pub id: String,
     pub name: String,
 }
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct SearchResult {
+    pub item_unique_name: String,
+    pub en_us: String,
+    pub de_de: String,
+    pub fr_fr: String,
+    pub ru_ru: String,
+    pub pl_pl: String,
+    pub es_es: String,
+    pub pt_br: String,
+    pub it_it: String,
+    pub zh_cn: String,
+    pub ko_kr: String,
+    pub ja_jp: String,
+    pub zh_tw: String,
+    pub id_id: String,
+    pub rank: Option<f32>,
+}

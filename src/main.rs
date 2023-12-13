@@ -42,7 +42,7 @@ async fn main() {
         .allow_origin(Any);
 
     let item_routes = Router::new()
-        .route("/:id", get(search_items))
+        .route("/", get(search_items))
         .route("/:id/localizations", get(get_item_localizations))
         .route("/:id/orders", get(get_item_market_orders));
 
@@ -77,10 +77,14 @@ async fn main() {
 }
 
 async fn search_items(
-    Path(item): Path<String>,
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
+    let item = match query.get("name") {
+        Some(item) => item,
+        None => return StatusCode::BAD_REQUEST.into_response(),
+    };
+
     let lang = match query.get("lang") {
         Some(lang) => lang,
         None => "en_us",
@@ -90,7 +94,10 @@ async fn search_items(
 
     let result = match result {
         Ok(result) => result,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+        Err(error) => {
+            print!("{:?}", error);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     };
 
     Json(result).into_response()
