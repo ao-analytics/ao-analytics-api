@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            item_unique_name, \n            en_us,\n            de_de,\n            fr_fr,\n            ru_ru,\n            pl_pl,\n            es_es,\n            pt_br,\n            it_it,\n            zh_cn,\n            ko_kr,\n            ja_jp,\n            zh_tw,\n            id_id\n        FROM \n            localized_name\n        WHERE \n            ( $1 = 'en_us' AND en_us ILIKE $2 )\n            OR ( $1 = 'de_de' AND de_de ILIKE $2 )\n            OR ( $1 = 'fr_fr' AND fr_fr ILIKE $2 )\n            OR ( $1 = 'ru_ru' AND ru_ru ILIKE $2 )\n            OR ( $1 = 'pl_pl' AND pl_pl ILIKE $2 )\n            OR ( $1 = 'es_es' AND es_es ILIKE $2 )\n            OR ( $1 = 'pt_br' AND pt_br ILIKE $2 )\n            OR ( $1 = 'it_it' AND it_it ILIKE $2 )\n            OR ( $1 = 'zh_cn' AND zh_cn ILIKE $2 )\n            OR ( $1 = 'ko_kr' AND ko_kr ILIKE $2 )\n            OR ( $1 = 'ja_jp' AND ja_jp ILIKE $2 )\n            OR ( $1 = 'zh_tw' AND zh_tw ILIKE $2 )\n            OR ( $1 = 'id_id' AND id_id ILIKE $2 )\n        ORDER BY \n            en_us ASC\n        LIMIT 10",
+  "query": "SELECT \n            item_unique_name, \n            en_us,\n            de_de,\n            fr_fr,\n            ru_ru,\n            pl_pl,\n            es_es,\n            pt_br,\n            it_it,\n            zh_cn,\n            ko_kr,\n            ja_jp,\n            zh_tw,\n            id_id\n        FROM \n            localized_name\n        ORDER BY\n           SIMILARITY(CASE \n                WHEN $1 = 'en_us' THEN en_us\n                WHEN $1 = 'de_de' THEN de_de\n                WHEN $1 = 'fr_fr' THEN fr_fr\n                WHEN $1 = 'ru_ru' THEN ru_ru\n                WHEN $1 = 'pl_pl' THEN pl_pl\n                WHEN $1 = 'es_es' THEN es_es\n                WHEN $1 = 'pt_br' THEN pt_br\n                WHEN $1 = 'it_it' THEN it_it\n                WHEN $1 = 'zh_cn' THEN zh_cn\n                WHEN $1 = 'ko_kr' THEN ko_kr\n                WHEN $1 = 'ja_jp' THEN ja_jp\n                WHEN $1 = 'zh_tw' THEN zh_tw\n                WHEN $1 = 'id_id' THEN id_id\n            END, $2) DESC\n        LIMIT 10",
   "describe": {
     "columns": [
       {
@@ -97,5 +97,5 @@
       false
     ]
   },
-  "hash": "6f92e879700d7f0fc43f1f9c3d46de44b1d05c817049a4617fc02852fc5a1fb1"
+  "hash": "ae60600dd9902a331392e8067a6ad571921e78e909a1c7343e67adf1cd536a68"
 }
