@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use sqlx::PgPool;
 
 use crate::models::db;
@@ -57,6 +58,8 @@ pub async fn query_market_orders(
     auction_type: Option<String>,
     quality_level: Option<i32>,
     enchantment_level: Option<i32>,
+    from_date: Option<NaiveDate>,
+    to_date: Option<NaiveDate>,
     limit: i64,
     offset: i64,
 ) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
@@ -85,17 +88,19 @@ pub async fn query_market_orders(
             AND ( $3::TEXT IS NULL OR auction_type = $3 )
             AND ( $4::INT IS NULL OR quality_level = $4 )
             AND ( $5::INT IS NULL OR enchantment_level = $5 )
-        ORDER BY
-            unit_price_silver ASC
-        OFFSET $7
-        LIMIT $6",
+            AND ( $6::DATE IS NULL OR DATE(expires_at) BETWEEN $6 AND COALESCE($7, CURRENT_DATE) )
+        ORDER BY unit_price_silver ASC
+        OFFSET $8
+        LIMIT $9",
         unique_name,
         location_id,
         auction_type,
         quality_level,
         enchantment_level,
-        limit,
+        from_date,
+        to_date,
         offset,
+        limit,
     )
     .fetch_all(pool)
     .await;

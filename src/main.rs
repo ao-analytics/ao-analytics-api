@@ -218,6 +218,22 @@ async fn get_item_market_orders(
         None => 0,
     };
 
+    let date_from: Option<chrono::NaiveDate> = match query.get("from") {
+        Some(date_from) => match chrono::NaiveDate::parse_from_str(date_from, "%Y-%m-%d") {
+            Ok(date_from) => Some(date_from),
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+
+    let date_to: Option<chrono::NaiveDate> = match query.get("to") {
+        Some(date_to) => match chrono::NaiveDate::parse_from_str(date_to, "%Y-%m-%d") {
+            Ok(date_to) => Some(date_to),
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+
     let result = utils::db::query_market_orders(
         &pool,
         Some(unique_name),
@@ -225,6 +241,8 @@ async fn get_item_market_orders(
         auction_type,
         quality_level,
         enchantment_level,
+        date_from,
+        date_to,
         limit,
         offset,
     )
@@ -322,6 +340,22 @@ async fn get_market_orders(
         None => 0,
     };
 
+    let date_from: Option<chrono::NaiveDate> = match query.get("from") {
+        Some(date_from) => match date_from.parse::<chrono::NaiveDate>() {
+            Ok(date_from) => Some(date_from),
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+
+    let date_to: Option<chrono::NaiveDate> = match query.get("to") {
+        Some(date_to) => match date_to.parse::<chrono::NaiveDate>() {
+            Ok(date_to) => Some(date_to),
+            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+
     let result = utils::db::query_market_orders(
         &pool,
         unique_name,
@@ -329,8 +363,10 @@ async fn get_market_orders(
         auction_type,
         quality_level,
         enchantment_level,
+        date_from,
+        date_to,
         limit,
-        offset,
+        offset
     )
     .await;
 
