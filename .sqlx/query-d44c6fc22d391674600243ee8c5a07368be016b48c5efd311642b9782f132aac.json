@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            COUNT(*) as count\n        FROM \n            market_order\n        WHERE\n            ( $1::TEXT IS NULL OR auction_type = $1 )",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d44c6fc22d391674600243ee8c5a07368be016b48c5efd311642b9782f132aac"
+}
