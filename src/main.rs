@@ -9,7 +9,8 @@ use axum::{
     http::{Method, StatusCode},
     response::{IntoResponse, Response},
     routing::get,
-    Json, Router,
+    Json, 
+    Router,
 };
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tower_http::cors::{Any, CorsLayer};
@@ -54,7 +55,7 @@ async fn main() {
 
     let location_routes = Router::new()
         .route("/", get(get_locations))
-        .route("/:id", get(get_locations_by_id));
+        .route("/:id", get(get_location_by_id));
 
     let routes = Router::new()
         .nest("/items", item_routes)
@@ -137,6 +138,15 @@ async fn get_market_order_statistics(
                 .unwrap();
 
         return Json(market_order_count_by_created_at).into_response();
+    }
+
+    if group_by.contains("created_at") && group_by.contains("location") {
+        let market_order_count_by_created_at_and_location =
+            utils::db::get_market_orders_count_by_created_at_and_location(&pool)
+                .await
+                .unwrap();
+
+        return Json(market_order_count_by_created_at_and_location).into_response();
     }
 
     if group_by == "location" {
@@ -401,7 +411,7 @@ async fn get_locations(
     Json(locations).into_response()
 }
 
-async fn get_locations_by_id(
+async fn get_location_by_id(
     Path(id): Path<String>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
