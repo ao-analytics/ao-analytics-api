@@ -166,13 +166,19 @@ pub async fn get_localized_descriptions_by_unique_name(
     .await;
 }
 
-pub async fn get_market_orders_count(pool: &PgPool) -> Result<db::MarketOrderCount, sqlx::Error> {
+pub async fn get_market_orders_count(
+    auction_type: Option<String>,
+    pool: &PgPool
+) -> Result<db::MarketOrderCount, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCount,
         "SELECT 
             COUNT(*) as count
         FROM 
-            market_order"
+            market_order
+        WHERE
+            ( $1::TEXT IS NULL OR auction_type = $1 )",
+        auction_type
     )
     .fetch_one(pool)
     .await;

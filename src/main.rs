@@ -147,20 +147,21 @@ async fn get_market_order_statistics(
         return Json(market_order_count_by_location).into_response();
     }
 
-    if group_by == "auction_type" {
-        let market_orders_count_by_auction_type =
-            utils::db::get_market_orders_count_by_auction_type(&pool)
-                .await
-                .unwrap();
-
-        return Json(market_orders_count_by_auction_type).into_response();
-    }
-
     return StatusCode::BAD_REQUEST.into_response();
 }
 
-async fn get_market_order_count(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let market_order_count = utils::db::get_market_orders_count(&pool).await.unwrap();
+async fn get_market_order_count(
+    Query(query): Query<HashMap<String, String>>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
+    let auction_type: Option<String> = match query.get("auction_type") {
+        Some(auction_type) => Some(auction_type.to_string()),
+        None => None,
+    };
+
+    let market_order_count = utils::db::get_market_orders_count(auction_type, &pool)
+        .await
+        .unwrap();
 
     Json(market_order_count).into_response()
 }
@@ -366,7 +367,7 @@ async fn get_market_orders(
         date_from,
         date_to,
         limit,
-        offset
+        offset,
     )
     .await;
 
