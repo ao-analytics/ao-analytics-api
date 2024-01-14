@@ -206,32 +206,13 @@ pub async fn get_market_orders_count_by_location(
     .await;
 }
 
-pub async fn get_market_orders_count_by_auction_type(
-    pool: &PgPool,
-) -> Result<Vec<db::MarketOrderCountByAuctionType>, sqlx::Error> {
-    return sqlx::query_as!(
-        db::MarketOrderCountByAuctionType,
-        "SELECT 
-            auction_type, 
-            COUNT(*) as count 
-        FROM 
-            market_order 
-        GROUP BY 
-            auction_type 
-        ORDER BY 
-            count DESC"
-    )
-    .fetch_all(pool)
-    .await;
-}
-
 pub async fn get_market_orders_count_by_updated_at(
     pool: &PgPool,
 ) -> Result<Vec<db::MarketOrderCountByUpdatedAt>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByUpdatedAt,
         "SELECT 
-            DATE_TRUNC('hour', updated_at)  AS updated_at,
+            DATE_TRUNC('hour', updated_at) AS updated_at,
             COUNT(*) as count
         FROM
             market_order
@@ -239,7 +220,6 @@ pub async fn get_market_orders_count_by_updated_at(
             expires_at > NOW()
         GROUP BY
             DATE_TRUNC('hour', updated_at)
-            
         ORDER BY
             updated_at DESC"
     )
@@ -257,20 +237,46 @@ pub async fn get_market_orders_count_by_updated_at_and_location(
             location.name as location,
             COUNT(*) as count
         FROM
-            market_order,   
+            market_order,
             location
         WHERE
             location_id = location.id
             AND expires_at > NOW()
         GROUP BY
             DATE_TRUNC('hour', updated_at),
-            location
+            location.name
         ORDER BY
             updated_at DESC"
     )
     .fetch_all(pool)
     .await;
 }
+
+pub async fn get_market_orders_count_by_created_at_and_location(
+    pool: &PgPool,
+) -> Result<Vec<db::MarketOrderCountByCreatedAtAndLocation>, sqlx::Error> {
+    return sqlx::query_as!(
+        db::MarketOrderCountByCreatedAtAndLocation,
+        "SELECT 
+            DATE_TRUNC('hour', created_at) AS created_at,
+            location.name as location,
+            COUNT(*) as count
+        FROM
+            market_order,
+            location
+        WHERE
+            location_id = location.id
+            AND expires_at > NOW()
+        GROUP BY
+            DATE_TRUNC('hour', created_at),
+            location.name
+        ORDER BY
+            created_at DESC"
+    )
+    .fetch_all(pool)
+    .await;
+}
+
 
 pub async fn get_market_orders_count_by_created_at(
     pool: &PgPool,
@@ -312,7 +318,8 @@ pub async fn query_locations(
                 market_order 
             GROUP BY 
                 location_id
-        ) AS market_order_count ON market_order_count.location_id = location.id
+        ) AS market_order_count 
+        ON market_order_count.location_id = location.id
         WHERE 
             ( $1::INT IS NULL OR $1 <= COALESCE(market_order_count.count, 0) )",
         min_market_orders

@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            DATE_TRUNC('hour', updated_at) AS updated_at,\n            location.name as location,\n            COUNT(*) as count\n        FROM\n            market_order,\n            location\n        WHERE\n            location_id = location.id\n            AND expires_at > NOW()\n        GROUP BY\n            DATE_TRUNC('hour', updated_at),\n            location.name\n        ORDER BY\n            updated_at DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "updated_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "location",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      false,
+      null
+    ]
+  },
+  "hash": "762675e94a71d8012c5121c2ca13082a9041c9d3f21e30b45837c99e1f779321"
+}
