@@ -9,8 +9,7 @@ use axum::{
     http::{Method, StatusCode},
     response::{IntoResponse, Response},
     routing::get,
-    Json, 
-    Router,
+    Json, Router,
 };
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tower_http::cors::{Any, CorsLayer};
