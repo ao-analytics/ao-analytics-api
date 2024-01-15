@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            updated_at,\n            location,\n            count\n        FROM\n            market_orders_count_by_updated_at_and_location",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "updated_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "location",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "6608fa121dfb56a70f19911d7217e88ef543cb7f32923721283bb84a63427e3e"
+}

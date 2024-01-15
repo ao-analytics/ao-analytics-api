@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            created_at,\n            location,\n            count\n        FROM\n            market_orders_count_by_created_at_and_location",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 1,
+        "name": "location",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "aec5f9eca287866ebf564d5d5e1b115fe1cd4d742ebb0b0d6a9c3d3f0905cab0"
+}
