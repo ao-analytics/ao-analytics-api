@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use sqlx::PgPool;
+use sqlx::{PgPool, Executor, postgres::any::AnyConnectionBackend};
 
 use crate::models::db;
 
@@ -182,6 +182,7 @@ pub async fn get_market_orders_count(
     )
     .fetch_one(pool)
     .await;
+
 }
 
 pub async fn get_market_orders_count_by_location(
@@ -190,17 +191,10 @@ pub async fn get_market_orders_count_by_location(
     return sqlx::query_as!(
         db::MarketOrderCountByLocation,
         "SELECT 
-            location.name as location, 
-            COUNT(*) as count 
+            location, 
+            count 
         FROM 
-            market_order, 
-            location 
-        WHERE 
-            location_id = location.id 
-        GROUP BY 
-            location.name 
-        ORDER BY
-            count DESC"
+            market_orders_count_by_location"
     )
     .fetch_all(pool)
     .await;
@@ -212,16 +206,10 @@ pub async fn get_market_orders_count_by_updated_at(
     return sqlx::query_as!(
         db::MarketOrderCountByUpdatedAt,
         "SELECT 
-            DATE_TRUNC('hour', updated_at) AS updated_at,
-            COUNT(*) as count
-        FROM
-            market_order
-        WHERE 
-            expires_at > NOW()
-        GROUP BY
-            DATE_TRUNC('hour', updated_at)
-        ORDER BY
-            updated_at DESC"
+            updated_at, 
+            count 
+        FROM 
+            market_orders_count_by_updated_at"
     )
     .fetch_all(pool)
     .await;
@@ -233,20 +221,11 @@ pub async fn get_market_orders_count_by_updated_at_and_location(
     return sqlx::query_as!(
         db::MarketOrderCountByUpdatedAtAndLocation,
         "SELECT 
-            DATE_TRUNC('hour', updated_at) AS updated_at,
-            location.name as location,
-            COUNT(*) as count
+            updated_at,
+            location,
+            count
         FROM
-            market_order,
-            location
-        WHERE
-            location_id = location.id
-            AND expires_at > NOW()
-        GROUP BY
-            DATE_TRUNC('hour', updated_at),
-            location.name
-        ORDER BY
-            updated_at DESC"
+            market_orders_count_by_updated_at_and_location"
     )
     .fetch_all(pool)
     .await;
@@ -258,20 +237,11 @@ pub async fn get_market_orders_count_by_created_at_and_location(
     return sqlx::query_as!(
         db::MarketOrderCountByCreatedAtAndLocation,
         "SELECT 
-            DATE_TRUNC('hour', created_at) AS created_at,
-            location.name as location,
-            COUNT(*) as count
+            created_at,
+            location,
+            count
         FROM
-            market_order,
-            location
-        WHERE
-            location_id = location.id
-            AND expires_at > NOW()
-        GROUP BY
-            DATE_TRUNC('hour', created_at),
-            location.name
-        ORDER BY
-            created_at DESC"
+            market_orders_count_by_created_at_and_location"
     )
     .fetch_all(pool)
     .await;
@@ -284,16 +254,10 @@ pub async fn get_market_orders_count_by_created_at(
     return sqlx::query_as!(
         db::MarketOrderCountByCreatedAt,
         "SELECT 
-            DATE_TRUNC('hour', created_at) AS created_at,
-            COUNT(*) as count
+            created_at,
+            count
         FROM
-            market_order
-        WHERE 
-            expires_at > NOW()
-        GROUP BY
-            DATE_TRUNC('hour', created_at)
-        ORDER BY
-            created_at DESC"
+            market_orders_count_by_created_at"
     )
     .fetch_all(pool)
     .await;
