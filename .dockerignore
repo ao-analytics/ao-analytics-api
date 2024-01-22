@@ -2,3 +2,5 @@ target/
 .vscode/
 .gitignore
 docker-compose.yml
+.env
+.env.prod
