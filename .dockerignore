@@ -3,4 +3,3 @@ target/
 .gitignore
 docker-compose.yml
 .env
-.env.prod
