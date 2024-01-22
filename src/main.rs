@@ -21,15 +21,8 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    let db_url = match std::env::var("ENV") {
-        Ok(env) => match env.as_str() {
-            "PROD" => dotenv!("PROD_DATABASE_URL"),
-            "DEV" => dotenv!("DATABASE_URL"),
-            _ => dotenv!("DATABASE_URL"),
-        },
-        Err(_) => dotenv!("DATABASE_URL"),
-    };
-
+    let db_url = dotenv!("DATABASE_URL");
+    
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(std::time::Duration::from_secs(5))
