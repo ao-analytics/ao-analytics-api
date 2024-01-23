@@ -88,7 +88,7 @@ pub async fn query_market_orders(
             AND ( $3::TEXT IS NULL OR auction_type = $3 )
             AND ( $4::INT IS NULL OR quality_level = $4 )
             AND ( $5::INT IS NULL OR enchantment_level = $5 )
-            AND ( $6::DATE IS NULL OR DATE(expires_at) BETWEEN $6 AND COALESCE($7, CURRENT_DATE) )
+            AND ( $6::DATE IS NULL OR DATE(updated_at) BETWEEN $6 AND COALESCE($7, CURRENT_DATE) )
         ORDER BY unit_price_silver ASC
         OFFSET $8
         LIMIT $9",
