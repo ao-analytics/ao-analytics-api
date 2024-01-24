@@ -285,7 +285,9 @@ pub async fn query_locations(
         ) AS market_order_count 
         ON market_order_count.location_id = location.id
         WHERE 
-            ( $1::INT IS NULL OR $1 <= COALESCE(market_order_count.count, 0) )",
+            ( $1::INT IS NULL OR $1 <= COALESCE(market_order_count.count, 0) )
+        ORDER BY
+            market_order_count.count DESC",
         min_market_orders
     )
     .fetch_all(pool)
