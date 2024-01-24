@@ -53,7 +53,7 @@ pub async fn search_items_by_localized_name(
 
 pub async fn query_market_orders(
     pool: &PgPool,
-    unique_name: Option<String>,
+    unique_name: String,
     location_id: Option<String>,
     auction_type: Option<String>,
     quality_level: Option<i32>,
@@ -83,7 +83,7 @@ pub async fn query_market_orders(
             location_id = location.id
             AND localized_name.item_unique_name = market_order.item_unique_name
             AND expires_at > NOW()
-            AND ( $1::TEXT IS NULL OR market_order.item_unique_name = $1 )
+            AND market_order.item_unique_name = $1
             AND ( $2::TEXT IS NULL OR location.id = $2 )
             AND ( $3::TEXT IS NULL OR auction_type = $3 )
             AND ( $4::INT IS NULL OR quality_level = $4 )
@@ -93,6 +93,80 @@ pub async fn query_market_orders(
         OFFSET $8
         LIMIT $9",
         unique_name,
+        location_id,
+        auction_type,
+        quality_level,
+        enchantment_level,
+        from_date,
+        to_date,
+        offset,
+        limit,
+    )
+    .fetch_all(pool)
+    .await;
+}
+
+pub async fn query_market_orders_with_localized_name(
+    pool: &PgPool,
+    localized_name: String,
+    lang: String,
+    location_id: Option<String>,
+    auction_type: Option<String>,
+    quality_level: Option<i32>,
+    enchantment_level: Option<i32>,
+    from_date: Option<NaiveDate>,
+    to_date: Option<NaiveDate>,
+    limit: i64,
+    offset: i64
+) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
+    return sqlx::query_as!(
+        db::MarketOrder,
+        "SELECT 
+            market_order.id,
+            location.id as location_id,
+            market_order.item_unique_name,
+            quality_level, 
+            enchantment_level, 
+            unit_price_silver, 
+            amount, 
+            auction_type, 
+            expires_at, 
+            updated_at,
+            created_at  
+        FROM 
+            market_order, 
+            location, 
+            localized_name
+        WHERE 
+            location_id = location.id
+            AND localized_name.item_unique_name = market_order.item_unique_name
+            AND expires_at > NOW()
+            AND ( $3::TEXT IS NULL OR location.id = $3 )
+            AND ( $4::TEXT IS NULL OR auction_type = $4 )
+            AND ( $5::INT IS NULL OR quality_level = $5 )
+            AND ( $6::INT IS NULL OR enchantment_level = $6 )
+            AND ( $7::DATE IS NULL OR DATE(updated_at) BETWEEN $7 AND COALESCE($8, CURRENT_DATE) )
+        ORDER BY
+        SIMILARITY(CASE 
+            WHEN $1 = 'en_us' THEN en_us
+            WHEN $1 = 'de_de' THEN de_de
+            WHEN $1 = 'fr_fr' THEN fr_fr
+            WHEN $1 = 'ru_ru' THEN ru_ru
+            WHEN $1 = 'pl_pl' THEN pl_pl
+            WHEN $1 = 'es_es' THEN es_es
+            WHEN $1 = 'pt_br' THEN pt_br
+            WHEN $1 = 'it_it' THEN it_it
+            WHEN $1 = 'zh_cn' THEN zh_cn
+            WHEN $1 = 'ko_kr' THEN ko_kr
+            WHEN $1 = 'ja_jp' THEN ja_jp
+            WHEN $1 = 'zh_tw' THEN zh_tw
+            WHEN $1 = 'id_id' THEN id_id
+        END, $2) DESC,
+        unit_price_silver ASC
+        OFFSET $9
+        LIMIT $10",
+        lang,
+        localized_name,
         location_id,
         auction_type,
         quality_level,
