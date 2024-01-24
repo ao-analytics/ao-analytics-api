@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            market_order.id,\n            location.id as location_id,\n            market_order.item_unique_name,\n            quality_level, \n            enchantment_level, \n            unit_price_silver, \n            amount, \n            auction_type, \n            expires_at, \n            updated_at,\n            created_at\n        FROM \n            market_order, location, localized_name\n        WHERE \n            location_id = location.id\n            AND localized_name.item_unique_name = market_order.item_unique_name\n            AND expires_at > NOW()\n            AND ( $1::TEXT IS NULL OR market_order.item_unique_name = $1 )\n            AND ( $2::TEXT IS NULL OR location.id = $2 )\n            AND ( $3::TEXT IS NULL OR auction_type = $3 )\n            AND ( $4::INT IS NULL OR quality_level = $4 )\n            AND ( $5::INT IS NULL OR enchantment_level = $5 )\n            AND ( $6::DATE IS NULL OR DATE(updated_at) BETWEEN $6 AND COALESCE($7, CURRENT_DATE) )\n        ORDER BY unit_price_silver ASC\n        OFFSET $8\n        LIMIT $9",
+  "query": "SELECT \n            market_order.id,\n            location.id as location_id,\n            market_order.item_unique_name,\n            quality_level, \n            enchantment_level, \n            unit_price_silver, \n            amount, \n            auction_type, \n            expires_at, \n            updated_at,\n            created_at\n        FROM \n            market_order, location, localized_name\n        WHERE \n            location_id = location.id\n            AND localized_name.item_unique_name = market_order.item_unique_name\n            AND expires_at > NOW()\n            AND market_order.item_unique_name = $1\n            AND ( $2::TEXT IS NULL OR location.id = $2 )\n            AND ( $3::TEXT IS NULL OR auction_type = $3 )\n            AND ( $4::INT IS NULL OR quality_level = $4 )\n            AND ( $5::INT IS NULL OR enchantment_level = $5 )\n            AND ( $6::DATE IS NULL OR DATE(updated_at) BETWEEN $6 AND COALESCE($7, CURRENT_DATE) )\n        ORDER BY unit_price_silver ASC\n        OFFSET $8\n        LIMIT $9",
   "describe": {
     "columns": [
       {
@@ -86,5 +86,5 @@
       false
     ]
   },
-  "hash": "f874af2641f812e9aa2f86178984d0b0780df389cb37eeb676f88b76c23cff83"
+  "hash": "d504f6ab6a4434a889f12e2db932442e4ca37a52bbfb297d53137015c7e1d2f6"
 }

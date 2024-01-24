@@ -239,7 +239,7 @@ async fn get_item_market_orders(
 
     let result = utils::db::query_market_orders(
         &pool,
-        Some(unique_name),
+        unique_name,
         location_id,
         auction_type,
         quality_level,
@@ -290,9 +290,15 @@ async fn get_market_orders(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let unique_name: Option<String> = match query.get("item") {
-        Some(unique_name) => Some(unique_name.to_string()),
-        None => None,
+
+    let localized_name = match query.get("item_name") {
+        Some(localized_name) => localized_name.to_string(),
+        None => return StatusCode::BAD_REQUEST.into_response(),
+    };
+
+    let lang = match query.get("lang") {
+        Some(lang) => lang.to_string(),
+        None => "en_us".to_string(),
     };
 
     let location_id: Option<String> = match query.get("location_id") {
@@ -359,9 +365,10 @@ async fn get_market_orders(
         None => None,
     };
 
-    let result = utils::db::query_market_orders(
+    let result = utils::db::query_market_orders_with_localized_name(
         &pool,
-        unique_name,
+        localized_name,
+        lang,
         location_id,
         auction_type,
         quality_level,
