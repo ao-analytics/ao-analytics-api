@@ -24,7 +24,9 @@ pub async fn search_items_by_localized_name(
             ko_kr,
             ja_jp,
             zh_tw,
-            id_id
+            id_id,
+            tr_tr,
+            ar_sa
         FROM 
             localized_name
         ORDER BY
@@ -42,6 +44,8 @@ pub async fn search_items_by_localized_name(
                 WHEN $1 = 'ja_jp' THEN ja_jp
                 WHEN $1 = 'zh_tw' THEN zh_tw
                 WHEN $1 = 'id_id' THEN id_id
+                WHEN $1 = 'tr_tr' THEN tr_tr
+                WHEN $1 = 'ar_sa' THEN ar_sa
             END, $2) DESC
         LIMIT 10",
         lang,
@@ -200,7 +204,9 @@ pub async fn get_localized_names_by_unique_name(
             ko_kr, 
             ja_jp, 
             zh_tw, 
-            id_id 
+            id_id,
+            tr_tr,
+            ar_sa
         FROM localized_name 
             WHERE item_unique_name = $1",
         unique_name
@@ -229,7 +235,9 @@ pub async fn get_localized_descriptions_by_unique_name(
             ko_kr, 
             ja_jp, 
             zh_tw, 
-            id_id 
+            id_id,
+            tr_tr,
+            ar_sa
         FROM 
             localized_description 
         WHERE 
