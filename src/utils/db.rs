@@ -267,6 +267,7 @@ pub async fn get_market_orders_count(
 
 }
 
+/*
 pub async fn get_market_orders_count_by_location(
     pool: &PgPool,
 ) -> Result<Vec<db::MarketOrderCountByLocation>, sqlx::Error> {
@@ -344,6 +345,8 @@ pub async fn get_market_orders_count_by_created_at(
     .fetch_all(pool)
     .await;
 }
+
+*/
 
 pub async fn query_locations(
     pool: &PgPool,
