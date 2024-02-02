@@ -1,3 +1,5 @@
+use chrono::Utc;
+
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Item {
     pub unique_name: String,
@@ -67,9 +69,9 @@ pub struct MarketOrder {
     pub unit_price_silver: i32,
     pub amount: i32,
     pub auction_type: String,
-    pub expires_at: chrono::NaiveDateTime,
-    pub updated_at: chrono::NaiveDateTime,
-    pub created_at: chrono::NaiveDateTime,
+    pub expires_at: chrono::DateTime<Utc>,
+    pub updated_at: chrono::DateTime<Utc>,
+    pub created_at: chrono::DateTime<Utc>,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
