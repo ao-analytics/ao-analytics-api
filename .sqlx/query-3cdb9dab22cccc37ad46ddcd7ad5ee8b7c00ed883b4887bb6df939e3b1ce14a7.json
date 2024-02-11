@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            created_at,\n            location.name as location,\n            count\n        FROM\n            market_orders_count_by_created_at_and_location\n            JOIN location ON location.id = market_orders_count_by_created_at_and_location.location_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "location",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "3cdb9dab22cccc37ad46ddcd7ad5ee8b7c00ed883b4887bb6df939e3b1ce14a7"
+}

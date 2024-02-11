@@ -13,6 +13,7 @@ use axum::{
 };
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tower_http::cors::{Any, CorsLayer};
+use tracing::{info, warn};
 
 mod models;
 use models::db;
@@ -21,6 +22,8 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt::init();
+
     let db_url = dotenv!("DATABASE_URL");
     
     let pool = PgPoolOptions::new()
@@ -64,7 +67,7 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("Server running on port {}", dotenv!("PORT"));
+    info!("Server running on port {}", dotenv!("PORT"));
 
     axum::serve(listener, app).await.unwrap();
 }
@@ -88,7 +91,7 @@ async fn search_items(
     let result = match result {
         Ok(result) => result,
         Err(error) => {
-            print!("{:?}", error);
+            warn!("{:?}", error);
             return StatusCode::NOT_FOUND.into_response();
         }
     };

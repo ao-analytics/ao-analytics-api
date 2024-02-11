@@ -267,17 +267,17 @@ pub async fn get_market_orders_count(
 
 }
 
-/*
 pub async fn get_market_orders_count_by_location(
     pool: &PgPool,
 ) -> Result<Vec<db::MarketOrderCountByLocation>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCountByLocation,
         "SELECT 
-            location, 
-            count 
+            location.name as location, 
+            count
         FROM 
-            market_orders_count_by_location"
+            market_orders_count_by_location
+            JOIN location ON location.id = market_orders_count_by_location.location_id"
     )
     .fetch_all(pool)
     .await;
@@ -305,10 +305,11 @@ pub async fn get_market_orders_count_by_updated_at_and_location(
         db::MarketOrderCountByUpdatedAtAndLocation,
         "SELECT 
             updated_at,
-            location,
+            location.name as location,
             count
         FROM
-            market_orders_count_by_updated_at_and_location"
+            market_orders_count_by_updated_at_and_location
+            JOIN location ON location.id = market_orders_count_by_updated_at_and_location.location_id"
     )
     .fetch_all(pool)
     .await;
@@ -321,10 +322,11 @@ pub async fn get_market_orders_count_by_created_at_and_location(
         db::MarketOrderCountByCreatedAtAndLocation,
         "SELECT 
             created_at,
-            location,
+            location.name as location,
             count
         FROM
-            market_orders_count_by_created_at_and_location"
+            market_orders_count_by_created_at_and_location
+            JOIN location ON location.id = market_orders_count_by_created_at_and_location.location_id"
     )
     .fetch_all(pool)
     .await;
@@ -345,8 +347,6 @@ pub async fn get_market_orders_count_by_created_at(
     .fetch_all(pool)
     .await;
 }
-
-*/
 
 pub async fn query_locations(
     pool: &PgPool,
