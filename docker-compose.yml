@@ -1,11 +1,11 @@
 services:
-  aodata-api:
-    container_name: aodata-api
+  ao-analytics-api:
+    container_name: ao-analytics-api
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      - aodata-db
+      - ao-analytics-db
     ports:
       - "8080:8080"
