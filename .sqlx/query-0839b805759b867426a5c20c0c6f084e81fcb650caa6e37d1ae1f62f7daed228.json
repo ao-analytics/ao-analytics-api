@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            updated_at,\n            location,\n            count\n        FROM\n            market_orders_count_by_updated_at_and_location",
+  "query": "SELECT \n            updated_at,\n            location.name as location,\n            count\n        FROM\n            market_orders_count_by_updated_at_and_location\n            JOIN location ON location.id = market_orders_count_by_updated_at_and_location.location_id",
   "describe": {
     "columns": [
       {
@@ -24,9 +24,9 @@
     },
     "nullable": [
       true,
-      true,
+      false,
       true
     ]
   },
-  "hash": "6608fa121dfb56a70f19911d7217e88ef543cb7f32923721283bb84a63427e3e"
+  "hash": "0839b805759b867426a5c20c0c6f084e81fcb650caa6e37d1ae1f62f7daed228"
 }
