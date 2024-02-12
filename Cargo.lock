@@ -52,7 +52,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "aodata-api"
+name = "ao-analytics-api"
 version = "0.1.0"
 dependencies = [
  "axum",
