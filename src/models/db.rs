@@ -1,4 +1,5 @@
-use chrono::Utc;
+use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
+use sqlx::types::{time::Date, BigDecimal};
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Item {
@@ -160,4 +161,15 @@ pub struct SearchResult {
     pub tr_tr: Option<String>,
     pub ar_sa: Option<String>,
     pub rank: Option<f32>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct ItemStats {
+    pub date: Option<NaiveDate>,
+    pub item_unique_name: Option<String>,
+    pub count: Option<i64>,
+    pub max_unit_price_silver: Option<i32>,
+    pub min_unit_price_silver: Option<i32>,
+    pub avg_unit_price_silver: Option<f64>,
+    pub sum_amount: Option<i64>
 }

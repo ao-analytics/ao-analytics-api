@@ -44,7 +44,8 @@ async fn main() {
 
     let statistics_routes = Router::new()
         .route("/orders", get(get_market_order_statistics))
-        .route("/orders/count", get(get_market_order_count));
+        .route("/orders/count", get(get_market_order_count))
+        .route("/items", get(get_item_stats));
 
     let order_routes = Router::new().route("/", get(get_market_orders));
 
@@ -425,4 +426,16 @@ async fn get_location_by_id(
     };
 
     Json(locations).into_response()
+}
+
+async fn get_item_stats(
+    Path(id): Path<String>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
+    let result = utils::db::get_item_stats(&pool, &id).await;
+
+    match result {
+        Ok(item_stats) => Json(item_stats).into_response(),
+        Err(_) => StatusCode::NOT_FOUND.into_response(),    
+    }
 }

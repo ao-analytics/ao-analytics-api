@@ -277,7 +277,9 @@ pub async fn get_market_orders_count_by_location(
             count
         FROM 
             market_orders_count_by_location
-            JOIN location ON location.id = market_orders_count_by_location.location_id"
+            JOIN location ON location.id = market_orders_count_by_location.location_id
+        ORDER BY 
+            count DESC"
     )
     .fetch_all(pool)
     .await;
@@ -292,7 +294,9 @@ pub async fn get_market_orders_count_by_updated_at(
             updated_at, 
             count 
         FROM 
-            market_orders_count_by_updated_at"
+            market_orders_count_by_updated_at
+        ORDER BY
+            updated_at DESC"
     )
     .fetch_all(pool)
     .await;
@@ -309,7 +313,9 @@ pub async fn get_market_orders_count_by_updated_at_and_location(
             count
         FROM
             market_orders_count_by_updated_at_and_location
-            JOIN location ON location.id = market_orders_count_by_updated_at_and_location.location_id"
+            JOIN location ON location.id = market_orders_count_by_updated_at_and_location.location_id
+        ORDER BY
+            updated_at DESC"
     )
     .fetch_all(pool)
     .await;
@@ -326,7 +332,9 @@ pub async fn get_market_orders_count_by_created_at_and_location(
             count
         FROM
             market_orders_count_by_created_at_and_location
-            JOIN location ON location.id = market_orders_count_by_created_at_and_location.location_id"
+            JOIN location ON location.id = market_orders_count_by_created_at_and_location.location_id
+        ORDER BY
+            created_at DESC"
     )
     .fetch_all(pool)
     .await;
@@ -342,7 +350,9 @@ pub async fn get_market_orders_count_by_created_at(
             created_at,
             count
         FROM
-            market_orders_count_by_created_at"
+            market_orders_count_by_created_at
+        ORDER BY
+            created_at DESC"
     )
     .fetch_all(pool)
     .await;
@@ -396,4 +406,30 @@ pub async fn get_locations_by_id(
     )
     .fetch_one(pool)
     .await;
+}
+
+pub async fn get_item_stats(
+    pool: &PgPool,
+    unique_name: &String,
+) -> Result<db::ItemStats, sqlx::Error> {
+    return sqlx::query_as!(
+        db::ItemStats,
+        "SELECT 
+            date,
+            item_unique_name,
+            count,
+            max_unit_price_silver,
+            min_unit_price_silver,
+            avg_unit_price_silver::float8 as avg_unit_price_silver,
+            sum_amount
+        FROM 
+            market_order_stats_by_item_and_day
+        WHERE 
+            item_unique_name = $1
+        ORDER BY
+            date DESC",
+        unique_name
+    )
+    .fetch_one(pool)
+    .await
 }
