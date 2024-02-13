@@ -25,7 +25,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let db_url = dotenv!("DATABASE_URL");
-    
+
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(std::time::Duration::from_secs(5))
@@ -190,7 +190,10 @@ async fn get_item_market_orders(
     let quality_level: Option<i32> = match query.get("quality_level") {
         Some(quality_level) => match quality_level.parse::<i32>() {
             Ok(quality_level) => Some(quality_level),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -198,7 +201,10 @@ async fn get_item_market_orders(
     let enchantment_level: Option<i32> = match query.get("enchantment_level") {
         Some(enchantment_level) => match enchantment_level.parse::<i32>() {
             Ok(enchantment_level) => Some(enchantment_level),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -212,7 +218,10 @@ async fn get_item_market_orders(
                     limit
                 }
             }
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => 100,
     };
@@ -220,7 +229,10 @@ async fn get_item_market_orders(
     let offset = match query.get("offset") {
         Some(offset) => match offset.parse::<i64>() {
             Ok(offset) => offset,
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => 0,
     };
@@ -228,7 +240,10 @@ async fn get_item_market_orders(
     let date_from: Option<chrono::NaiveDate> = match query.get("from") {
         Some(date_from) => match chrono::NaiveDate::parse_from_str(date_from, "%Y-%m-%d") {
             Ok(date_from) => Some(date_from),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -236,7 +251,10 @@ async fn get_item_market_orders(
     let date_to: Option<chrono::NaiveDate> = match query.get("to") {
         Some(date_to) => match chrono::NaiveDate::parse_from_str(date_to, "%Y-%m-%d") {
             Ok(date_to) => Some(date_to),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -257,7 +275,10 @@ async fn get_item_market_orders(
 
     let orders = match result {
         Ok(orders) => orders,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     };
 
     Json(orders).into_response()
@@ -271,14 +292,20 @@ async fn get_item_localizations(
 
     let name = match result {
         Ok(item) => item,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     };
 
     let result = utils::db::get_localized_descriptions_by_unique_name(&pool, &unique_name).await;
 
     let description = match result {
         Ok(item) => item,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     };
 
     let item = db::Localizations {
@@ -294,7 +321,6 @@ async fn get_market_orders(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-
     let localized_name = match query.get("item_name") {
         Some(localized_name) => localized_name.to_string(),
         None => return StatusCode::BAD_REQUEST.into_response(),
@@ -318,7 +344,10 @@ async fn get_market_orders(
     let quality_level: Option<i32> = match query.get("quality_level") {
         Some(quality_level) => match quality_level.parse::<i32>() {
             Ok(quality_level) => Some(quality_level),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -326,7 +355,10 @@ async fn get_market_orders(
     let enchantment_level: Option<i32> = match query.get("enchantment_level") {
         Some(enchantment_level) => match enchantment_level.parse::<i32>() {
             Ok(enchantment_level) => Some(enchantment_level),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -340,7 +372,10 @@ async fn get_market_orders(
                     limit
                 }
             }
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => 100,
     };
@@ -348,7 +383,10 @@ async fn get_market_orders(
     let offset = match query.get("offset") {
         Some(offset) => match offset.parse::<i64>() {
             Ok(offset) => offset,
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => 0,
     };
@@ -356,7 +394,10 @@ async fn get_market_orders(
     let date_from: Option<chrono::NaiveDate> = match query.get("from") {
         Some(date_from) => match date_from.parse::<chrono::NaiveDate>() {
             Ok(date_from) => Some(date_from),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -364,7 +405,10 @@ async fn get_market_orders(
     let date_to: Option<chrono::NaiveDate> = match query.get("to") {
         Some(date_to) => match date_to.parse::<chrono::NaiveDate>() {
             Ok(date_to) => Some(date_to),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -386,7 +430,10 @@ async fn get_market_orders(
 
     let orders = match result {
         Ok(orders) => orders,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     };
 
     Json(orders).into_response()
@@ -399,7 +446,10 @@ async fn get_locations(
     let min_market_orders: Option<i32> = match query.get("min_market_orders") {
         Some(min_market_orders) => match min_market_orders.parse::<i32>() {
             Ok(min_market_orders) => Some(min_market_orders),
-            Err(_) => return StatusCode::BAD_REQUEST.into_response(),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
         },
         None => None,
     };
@@ -408,7 +458,10 @@ async fn get_locations(
 
     let locations = match result {
         Ok(locations) => locations,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     };
 
     Json(locations).into_response()
@@ -422,7 +475,10 @@ async fn get_location_by_id(
 
     let locations = match result {
         Ok(locations) => locations,
-        Err(_) => return StatusCode::NOT_FOUND.into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     };
 
     Json(locations).into_response()
@@ -436,6 +492,9 @@ async fn get_item_stats(
 
     match result {
         Ok(item_stats) => Json(item_stats).into_response(),
-        Err(_) => StatusCode::NOT_FOUND.into_response(),    
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
     }
 }
