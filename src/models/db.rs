@@ -1,5 +1,4 @@
-use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
-use sqlx::types::{time::Date, BigDecimal};
+use chrono::{NaiveDate, Utc};
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Item {
