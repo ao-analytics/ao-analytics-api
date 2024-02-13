@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            created_at,\n            count\n        FROM\n            market_orders_count_by_created_at",
+  "query": "SELECT \n            created_at,\n            count\n        FROM\n            market_orders_count_by_created_at\n        ORDER BY\n            created_at DESC",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       true
     ]
   },
-  "hash": "fac2c3680d9ed622ca59db267d9a389e3b61c0a00dcd33eef85f728f92a13768"
+  "hash": "ed3a5382d76ec15cab97b9076f991cada8f3f3f856ce2933cdfd5208f8af3d36"
 }

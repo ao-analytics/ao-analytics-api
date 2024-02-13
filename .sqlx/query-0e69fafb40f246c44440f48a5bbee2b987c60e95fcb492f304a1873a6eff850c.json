@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            location.name as location, \n            count\n        FROM \n            market_orders_count_by_location\n            JOIN location ON location.id = market_orders_count_by_location.location_id",
+  "query": "SELECT \n            location.name as location, \n            count\n        FROM \n            market_orders_count_by_location\n            JOIN location ON location.id = market_orders_count_by_location.location_id\n        ORDER BY \n            count DESC",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       true
     ]
   },
-  "hash": "a1ae544a9ebf8a9c5cfe59e18c47d4063a16eacc224a4b03f4c4e40cf26a4f1c"
+  "hash": "0e69fafb40f246c44440f48a5bbee2b987c60e95fcb492f304a1873a6eff850c"
 }

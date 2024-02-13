@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            updated_at, \n            count \n        FROM \n            market_orders_count_by_updated_at",
+  "query": "SELECT \n            updated_at, \n            count \n        FROM \n            market_orders_count_by_updated_at\n        ORDER BY\n            updated_at DESC",
   "describe": {
     "columns": [
       {
@@ -22,5 +22,5 @@
       true
     ]
   },
-  "hash": "63d3e0f3122e18a7d69b6705e70de7dccca4f722fcb1dba0b986d076182c8118"
+  "hash": "fe50b483798d3ccab86e6fede9696ce865ddd85b042830327d93a2bd054c1b16"
 }
