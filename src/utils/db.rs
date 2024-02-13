@@ -411,7 +411,7 @@ pub async fn get_locations_by_id(
 pub async fn get_item_stats(
     pool: &PgPool,
     unique_name: &String,
-) -> Result<db::ItemStats, sqlx::Error> {
+) -> Result<Vec<db::ItemStats>, sqlx::Error> {
     return sqlx::query_as!(
         db::ItemStats,
         "SELECT 
@@ -430,6 +430,6 @@ pub async fn get_item_stats(
             date DESC",
         unique_name
     )
-    .fetch_one(pool)
+    .fetch_all(pool)
     .await
 }
