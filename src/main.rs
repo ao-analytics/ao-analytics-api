@@ -45,7 +45,7 @@ async fn main() {
     let statistics_routes = Router::new()
         .route("/orders", get(get_market_order_statistics))
         .route("/orders/count", get(get_market_order_count))
-        .route("/items", get(get_item_stats));
+        .route("/items/:id", get(get_item_stats));
 
     let order_routes = Router::new().route("/", get(get_market_orders));
 
@@ -62,6 +62,7 @@ async fn main() {
     let app = Router::new()
         .nest("/api", routes)
         .layer(cors)
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .with_state(pool);
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", dotenv!("PORT")))
