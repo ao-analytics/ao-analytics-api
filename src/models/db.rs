@@ -166,9 +166,13 @@ pub struct SearchResult {
 pub struct ItemStats {
     pub date: Option<NaiveDate>,
     pub item_unique_name: Option<String>,
-    pub count: Option<i64>,
-    pub max_unit_price_silver: Option<i32>,
-    pub min_unit_price_silver: Option<i32>,
-    pub avg_unit_price_silver: Option<f64>,
-    pub sum_amount: Option<i64>
+    pub total_count: Option<i64>,
+    pub max_unit_price_silver_request: Option<i32>,
+    pub min_unit_price_silver_request: Option<i32>,
+    pub avg_unit_price_silver_request: Option<f64>,
+    pub sum_amount_request: Option<i64>,
+    pub max_unit_price_silver_offer: Option<i32>,
+    pub min_unit_price_silver_offer: Option<i32>,
+    pub avg_unit_price_silver_offer: Option<f64>,
+    pub sum_amount_offer: Option<i64>,
 }

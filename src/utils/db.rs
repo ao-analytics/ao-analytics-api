@@ -165,6 +165,8 @@ pub async fn query_market_orders_with_localized_name(
             WHEN $1 = 'ja_jp' THEN ja_jp
             WHEN $1 = 'zh_tw' THEN zh_tw
             WHEN $1 = 'id_id' THEN id_id
+            WHEN $1 = 'tr_tr' THEN tr_tr
+            WHEN $1 = 'ar_sa' THEN ar_sa
         END, $2) DESC,
         unit_price_silver ASC
         OFFSET $9
@@ -417,11 +419,15 @@ pub async fn get_item_stats(
         "SELECT 
             date,
             item_unique_name,
-            count,
-            max_unit_price_silver,
-            min_unit_price_silver,
-            avg_unit_price_silver::float8 as avg_unit_price_silver,
-            sum_amount
+            total_count,
+            max_unit_price_silver_offer,
+            min_unit_price_silver_offer,
+            avg_unit_price_silver_offer,
+            sum_amount_offer,
+            max_unit_price_silver_request,
+            min_unit_price_silver_request,
+            avg_unit_price_silver_request,
+            sum_amount_request
         FROM 
             market_order_stats_by_item_and_day
         WHERE 
