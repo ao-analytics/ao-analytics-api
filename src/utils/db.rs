@@ -121,7 +121,7 @@ pub async fn query_market_orders_with_localized_name(
     from_date: Option<NaiveDate>,
     to_date: Option<NaiveDate>,
     limit: i64,
-    offset: i64
+    offset: i64,
 ) -> Result<Vec<db::MarketOrder>, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrder,
@@ -252,7 +252,7 @@ pub async fn get_localized_descriptions_by_unique_name(
 
 pub async fn get_market_orders_count(
     auction_type: Option<String>,
-    pool: &PgPool
+    pool: &PgPool,
 ) -> Result<db::MarketOrderCount, sqlx::Error> {
     return sqlx::query_as!(
         db::MarketOrderCount,
@@ -266,7 +266,6 @@ pub async fn get_market_orders_count(
     )
     .fetch_one(pool)
     .await;
-
 }
 
 pub async fn get_market_orders_count_by_location(
@@ -341,7 +340,6 @@ pub async fn get_market_orders_count_by_created_at_and_location(
     .fetch_all(pool)
     .await;
 }
-
 
 pub async fn get_market_orders_count_by_created_at(
     pool: &PgPool,
@@ -437,5 +435,5 @@ pub async fn get_item_stats(
         unique_name
     )
     .fetch_all(pool)
-    .await
+    .await;
 }
