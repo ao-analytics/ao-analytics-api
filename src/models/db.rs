@@ -169,10 +169,10 @@ pub struct ItemStats {
     pub total_count: Option<i64>,
     pub max_unit_price_silver_request: Option<i32>,
     pub min_unit_price_silver_request: Option<i32>,
-    pub avg_unit_price_silver_request: Option<f64>,
+    pub avg_unit_price_silver_request: Option<i32>,
     pub sum_amount_request: Option<i64>,
     pub max_unit_price_silver_offer: Option<i32>,
     pub min_unit_price_silver_offer: Option<i32>,
-    pub avg_unit_price_silver_offer: Option<f64>,
+    pub avg_unit_price_silver_offer: Option<i32>,
     pub sum_amount_offer: Option<i64>,
 }
