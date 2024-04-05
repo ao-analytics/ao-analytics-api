@@ -1,11 +1,11 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT \n            created_at,\n            count\n        FROM\n            market_orders_count_by_created_at\n        ORDER BY\n            created_at DESC",
+  "query": "SELECT \n        date, \n            count \n        FROM \n            market_orders_count_by_updated_at\n        ORDER BY\n            date DESC",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "created_at",
+        "name": "date",
         "type_info": "Timestamptz"
       },
       {
@@ -22,5 +22,5 @@
       true
     ]
   },
-  "hash": "ed3a5382d76ec15cab97b9076f991cada8f3f3f856ce2933cdfd5208f8af3d36"
+  "hash": "17d2dd1071b92effa2258fa875e866cddde09b439ecea03cbb026f4195983364"
 }
