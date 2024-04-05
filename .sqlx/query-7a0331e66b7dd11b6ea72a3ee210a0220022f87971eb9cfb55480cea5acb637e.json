@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            item_unique_name,\n            lang,\n            description\n        FROM \n            localized_description \n        WHERE \n            item_unique_name = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "item_unique_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "lang",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "description",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "7a0331e66b7dd11b6ea72a3ee210a0220022f87971eb9cfb55480cea5acb637e"
+}

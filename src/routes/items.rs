@@ -19,6 +19,7 @@ pub fn get_router() -> Router<Pool<Postgres>> {
         .route("/", get(search_items))
         .route("/:id/localizations", get(get_item_localizations))
         .route("/:id/orders", get(get_item_market_orders))
+        .route("/:id/data", get(get_item_data))
 }
 
 async fn search_items(
@@ -35,7 +36,7 @@ async fn search_items(
         None => "en_us",
     };
 
-    let result = utils::db::search_items_by_localized_name(&pool, lang, &item).await;
+    let result = utils::db::search_items_by_localized_name(&pool, lang, item).await;
 
     let result = match result {
         Ok(result) => result,
@@ -48,13 +49,30 @@ async fn search_items(
     Json(result).into_response()
 }
 
+async fn get_item_data(
+    Path(unique_name): Path<String>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
+    let result = utils::db::get_item_data_by_unique_name(&pool, &unique_name).await;
+
+    let item = match result {
+        Ok(item) => item,
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
+    };
+
+    Json(item).into_response()
+}
+
 async fn get_item_localizations(
     Path(unique_name): Path<String>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
     let result = utils::db::get_localized_names_by_unique_name(&pool, &unique_name).await;
 
-    let name = match result {
+    let names = match result {
         Ok(item) => item,
         Err(e) => {
             warn!("{:?}", e);
@@ -64,7 +82,7 @@ async fn get_item_localizations(
 
     let result = utils::db::get_localized_descriptions_by_unique_name(&pool, &unique_name).await;
 
-    let description = match result {
+    let descriptions = match result {
         Ok(item) => item,
         Err(e) => {
             warn!("{:?}", e);
@@ -74,8 +92,8 @@ async fn get_item_localizations(
 
     let item = models::db::Localizations {
         unique_name: unique_name.to_string(),
-        name,
-        description,
+        names: names.iter().map(|localized_name| (localized_name.lang.clone(), localized_name.name.clone())).collect(),
+        descriptions: descriptions.iter().map(|localized_name| (localized_name.lang.clone(), localized_name.description.clone())).collect(),
     };
 
     Json(item).into_response()
@@ -118,6 +136,17 @@ async fn get_item_market_orders(
         None => None,
     };
 
+    let tier: Option<i32> = match query.get("tier") {
+        Some(tier) => match tier.parse::<i32>() {
+            Ok(tier) => Some(tier),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
+        },
+        None => None,
+    };
+
     let limit = match query.get("limit") {
         Some(limit) => match limit.parse::<i64>() {
             Ok(limit) => {
@@ -146,28 +175,6 @@ async fn get_item_market_orders(
         None => 0,
     };
 
-    let date_from: Option<chrono::NaiveDate> = match query.get("from") {
-        Some(date_from) => match chrono::NaiveDate::parse_from_str(date_from, "%Y-%m-%d") {
-            Ok(date_from) => Some(date_from),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let date_to: Option<chrono::NaiveDate> = match query.get("to") {
-        Some(date_to) => match chrono::NaiveDate::parse_from_str(date_to, "%Y-%m-%d") {
-            Ok(date_to) => Some(date_to),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
     let result = utils::db::query_market_orders(
         &pool,
         unique_name,
@@ -175,8 +182,7 @@ async fn get_item_market_orders(
         auction_type,
         quality_level,
         enchantment_level,
-        date_from,
-        date_to,
+        tier,
         limit,
         offset,
     )

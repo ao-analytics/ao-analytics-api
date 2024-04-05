@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n            item_unique_name,\n            lang,\n            name\n        FROM \n            localized_name\n        WHERE\n            lang = $1\n        ORDER BY\n           SIMILARITY(name, $2) DESC\n        LIMIT 10",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "item_unique_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "lang",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5a168d03e720d397385e8f5f5fb8ac1c7e8542fe6ca531ec233c5c03a09263a5"
+}

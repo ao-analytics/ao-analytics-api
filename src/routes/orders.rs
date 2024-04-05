@@ -29,7 +29,7 @@ async fn get_market_orders(
 
     let lang = match query.get("lang") {
         Some(lang) => lang.to_string(),
-        None => "en_us".to_string(),
+        None => "EN-US".to_string(),
     };
 
     let location_id: Option<String> = match query.get("location_id") {
@@ -56,6 +56,17 @@ async fn get_market_orders(
     let enchantment_level: Option<i32> = match query.get("enchantment_level") {
         Some(enchantment_level) => match enchantment_level.parse::<i32>() {
             Ok(enchantment_level) => Some(enchantment_level),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
+        },
+        None => None,
+    };
+
+    let tier: Option<i32> = match query.get("tier") {
+        Some(tier) => match tier.parse::<i32>() {
+            Ok(tier) => Some(tier),
             Err(e) => {
                 warn!("{:?}", e);
                 return StatusCode::BAD_REQUEST.into_response();
@@ -92,28 +103,6 @@ async fn get_market_orders(
         None => 0,
     };
 
-    let date_from: Option<chrono::NaiveDate> = match query.get("from") {
-        Some(date_from) => match date_from.parse::<chrono::NaiveDate>() {
-            Ok(date_from) => Some(date_from),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let date_to: Option<chrono::NaiveDate> = match query.get("to") {
-        Some(date_to) => match date_to.parse::<chrono::NaiveDate>() {
-            Ok(date_to) => Some(date_to),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
     let result = utils::db::query_market_orders_with_localized_name(
         &pool,
         localized_name,
@@ -122,8 +111,7 @@ async fn get_market_orders(
         auction_type,
         quality_level,
         enchantment_level,
-        date_from,
-        date_to,
+        tier,
         limit,
         offset,
     )

@@ -4,7 +4,7 @@ WORKDIR /ao-analytics-api
 COPY . .
 RUN cargo chef prepare --recipe-path recipe.json
 
-FROM lukemathwalker/cargo-chef:latest as builder
+FROM  lukemathwalker/cargo-chef:latest as builder
 
 ENV SQLX_OFFLINE=true
 WORKDIR /ao-analytics-api
