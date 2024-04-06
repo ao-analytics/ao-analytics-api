@@ -106,7 +106,7 @@ pub async fn query_market_orders(
 
 pub async fn query_market_orders_with_localized_name(
     pool: &PgPool,
-    localized_name: String,
+    localized_name: Option<String>,
     lang: String,
     location_id: Option<String>,
     auction_type: Option<String>,
