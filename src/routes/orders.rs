@@ -23,8 +23,8 @@ async fn get_market_orders(
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
     let localized_name = match query.get("item_name") {
-        Some(localized_name) => localized_name.to_string(),
-        None => return StatusCode::BAD_REQUEST.into_response(),
+        Some(localized_name) => Some(localized_name.to_string()),
+        None => None,
     };
 
     let lang = match query.get("lang") {
