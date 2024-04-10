@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate dotenv_codegen;
 
+use std::str::FromStr;
 use std::time::Duration;
 
 use axum::http::Method;
@@ -21,7 +22,11 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    let filter = tracing_subscriber::EnvFilter::from_str(dotenv!("RUST_LOG"))
+        .unwrap();
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .init();
 
     let db_url = dotenv!("DATABASE_URL");
 
