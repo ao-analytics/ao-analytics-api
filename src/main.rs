@@ -1,7 +1,3 @@
-#[macro_use]
-extern crate dotenv_codegen;
-
-use std::str::FromStr;
 use std::time::Duration;
 
 use axum::http::Method;
@@ -22,18 +18,21 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
-    let filter = tracing_subscriber::EnvFilter::from_str(dotenv!("RUST_LOG"))
-        .unwrap();
-    tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .init();
+    let config = utils::config::Config::from_env();
 
-    let db_url = dotenv!("DATABASE_URL");
+    let config = match config {
+        Some(config) => config,
+        None => {
+            panic!("Failed to initialize config");
+        }
+    };
+
+    tracing_subscriber::fmt().init();
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .acquire_timeout(Duration::from_secs(5))
-        .connect(db_url)
+        .connect(&config.db_url)
         .await
         .unwrap();
 
@@ -53,11 +52,11 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .with_state(pool);
 
-    let listener = TcpListener::bind(format!("0.0.0.0:{}", dotenv!("PORT")))
+    let listener = TcpListener::bind(format!("0.0.0.0:{}", config.port))
         .await
         .unwrap();
 
-    info!("Server running on port {}", dotenv!("PORT"));
+    info!("Server running on port {}", config.port);
 
     axum::serve(listener, app).await.unwrap();
 }
