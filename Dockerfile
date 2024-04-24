@@ -16,7 +16,6 @@ RUN cargo build --release
 
 FROM ubuntu:latest
 
-EXPOSE 8080
 COPY --from=builder /ao-analytics-api/target/release/ao-analytics-api /usr/local/bin/ao-analytics-api
 
 CMD ["ao-analytics-api"]
