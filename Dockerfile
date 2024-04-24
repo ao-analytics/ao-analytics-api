@@ -11,7 +11,6 @@ WORKDIR /ao-analytics-api
 COPY --from=planner /ao-analytics-api/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
-COPY .env.prod .env
 RUN cargo build --release
 
 FROM ubuntu:latest
