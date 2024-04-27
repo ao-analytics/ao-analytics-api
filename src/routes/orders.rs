@@ -22,25 +22,16 @@ async fn get_market_orders(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let localized_name = match query.get("item_name") {
-        Some(localized_name) => Some(localized_name.to_string()),
-        None => None,
-    };
+    let localized_name = query.get("item_name").map(|localized_name| localized_name.to_string());
 
     let lang = match query.get("lang") {
         Some(lang) => lang.to_string(),
         None => "EN-US".to_string(),
     };
 
-    let location_id: Option<String> = match query.get("location_id") {
-        Some(location_id) => Some(location_id.to_string()),
-        None => None,
-    };
+    let location_id: Option<String> = query.get("location_id").map(|location_id| location_id.to_string());
 
-    let auction_type: Option<String> = match query.get("auction_type") {
-        Some(auction_type) => Some(auction_type.to_string()),
-        None => None,
-    };
+    let auction_type: Option<String> = query.get("auction_type").map(|auction_type| auction_type.to_string());
 
     let quality_level: Option<i32> = match query.get("quality_level") {
         Some(quality_level) => match quality_level.parse::<i32>() {

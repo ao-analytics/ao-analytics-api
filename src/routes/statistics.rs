@@ -40,7 +40,7 @@ async fn get_market_order_statistics(
 
     if group_by.contains("location") {
         let market_order_count_by_location =
-            utils::db::get_market_orders_count_by_date_and_location(&pool, &interval)
+            utils::db::get_market_orders_count_by_date_and_location(&pool, interval)
                 .await
                 .unwrap();
 
@@ -48,21 +48,18 @@ async fn get_market_order_statistics(
     }
 
     let market_order_count_by_updated_at =
-        utils::db::get_market_orders_count_by_date(&pool, &interval)
+        utils::db::get_market_orders_count_by_date(&pool, interval)
             .await
             .unwrap();
 
-    return Json(market_order_count_by_updated_at).into_response();
+    Json(market_order_count_by_updated_at).into_response()
 }
 
 async fn get_market_order_count(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let auction_type: Option<String> = match query.get("auction_type") {
-        Some(auction_type) => Some(auction_type.to_string()),
-        None => None,
-    };
+    let auction_type: Option<String> = query.get("auction_type").map(|auction_type| auction_type.to_string());
 
     let market_order_count = utils::db::get_market_orders_count(auction_type, &pool)
         .await
@@ -90,7 +87,7 @@ async fn get_item_stats(
     };
 
     if group_by.contains("location") {
-        let result = utils::db::get_item_stats_by_date_and_location(&pool, &id, &interval).await;
+        let result = utils::db::get_item_stats_by_date_and_location(&pool, &id, interval).await;
 
         return match result {
             Ok(item_stats) => Json(item_stats).into_response(),
@@ -101,13 +98,13 @@ async fn get_item_stats(
         };
     }
 
-    let result = utils::db::get_item_stats_by_date(&pool, &id, &interval).await;
+    let result = utils::db::get_item_stats_by_date(&pool, &id, interval).await;
 
-    return match result {
+    match result {
         Ok(item_stats) => Json(item_stats).into_response(),
         Err(e) => {
             warn!("{:?}", e);
-            return StatusCode::NOT_FOUND.into_response();
+            StatusCode::NOT_FOUND.into_response()
         }
-    };
+    }
 }
