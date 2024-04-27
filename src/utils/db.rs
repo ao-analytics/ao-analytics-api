@@ -7,7 +7,7 @@ pub async fn search_items_by_localized_name(
     lang: &str,
     item: &str,
 ) -> Result<Vec<queries::LocalizedName>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::LocalizedName,
         "SELECT
     item_unique_name,
@@ -24,14 +24,14 @@ LIMIT 10",
         item
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn get_item_data_by_unique_name(
     pool: &PgPool,
     unique_name: &String,
 ) -> Result<queries::ItemData, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::ItemData,
         "SELECT
     unique_name,
@@ -49,7 +49,7 @@ WHERE
         unique_name
     )
     .fetch_one(pool)
-    .await;
+    .await
 }
 
 pub async fn query_market_orders(
@@ -63,7 +63,7 @@ pub async fn query_market_orders(
     limit: i64,
     offset: i64,
 ) -> Result<Vec<queries::MarketOrder>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::MarketOrder,
         "SELECT
     market_order.id,
@@ -101,7 +101,7 @@ LIMIT $8",
         limit,
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn query_market_orders_with_localized_name(
@@ -116,7 +116,7 @@ pub async fn query_market_orders_with_localized_name(
     limit: i64,
     offset: i64,
 ) -> Result<Vec<queries::MarketOrder>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::MarketOrder,
         "SELECT
     market_order.id,
@@ -157,14 +157,14 @@ LIMIT $9",
         limit,
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn get_localized_names_by_unique_name(
     pool: &PgPool,
     unique_name: &String,
 ) -> Result<Vec<queries::LocalizedName>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::LocalizedName,
         "SELECT
     item_unique_name,
@@ -175,14 +175,14 @@ FROM localized_name
         unique_name
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn get_localized_descriptions_by_unique_name(
     pool: &PgPool,
     unique_name: &String,
 ) -> Result<Vec<queries::LocalizedDescription>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::LocalizedDescription,
         "SELECT
     item_unique_name,
@@ -195,7 +195,7 @@ WHERE
         unique_name
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn get_market_orders_count(
@@ -204,7 +204,7 @@ pub async fn get_market_orders_count(
 ) -> Result<queries::MarketOrderCount, sqlx::Error> {
     match auction_type {
         Some(auction_type) => {
-            return sqlx::query_as!(
+            sqlx::query_as!(
                 queries::MarketOrderCount,
                 "SELECT
     COUNT(*) as count
@@ -215,10 +215,10 @@ WHERE
                 auction_type
             )
             .fetch_one(pool)
-            .await;
+            .await
         }
         None => {
-            return sqlx::query_as!(
+            sqlx::query_as!(
                 queries::MarketOrderCount,
                 "SELECT
     COUNT(*) as count
@@ -226,7 +226,7 @@ FROM
     market_order"
             )
             .fetch_one(pool)
-            .await;
+            .await
         }
     }
 }
@@ -235,7 +235,7 @@ pub async fn get_market_orders_count_by_date(
     pool: &PgPool,
     interval: &str,
 ) -> Result<Vec<queries::MarketOrderCountByUpdatedAt>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::MarketOrderCountByUpdatedAt,
         "SELECT
     time_bucket($1::TEXT::INTERVAL, date) as date,
@@ -249,14 +249,14 @@ ORDER BY
         interval
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn get_market_orders_count_by_date_and_location(
     pool: &PgPool,
     interval: &str,
 ) -> Result<Vec<queries::MarketOrderCountByUpdatedAtAndLocation>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::MarketOrderCountByUpdatedAtAndLocation,
         "SELECT
     time_bucket($1::TEXT::INTERVAL, date) as date,
@@ -273,14 +273,14 @@ ORDER BY
         interval
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn query_locations(
     pool: &PgPool,
     min_market_orders: Option<i32>,
 ) -> Result<Vec<queries::Location>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::Location,
         "SELECT
     location.id,
@@ -304,14 +304,14 @@ ORDER BY
         min_market_orders
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn get_locations_by_id(
     pool: &PgPool,
     location_id: &String,
 ) -> Result<queries::Location, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::Location,
         "SELECT
     location.id,
@@ -323,7 +323,7 @@ WHERE
         location_id
     )
     .fetch_one(pool)
-    .await;
+    .await
 }
 
 pub async fn get_item_stats_by_date(
@@ -331,7 +331,7 @@ pub async fn get_item_stats_by_date(
     unique_name: &str,
     interval: &str,
 ) -> Result<Vec<queries::ItemStatsByDate>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::ItemStatsByDate,
         "SELECT
     time_bucket($2::TEXT::INTERVAL, date) as date,
@@ -356,7 +356,7 @@ GROUP BY
         interval
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
 
 pub async fn get_item_stats_by_date_and_location(
@@ -364,7 +364,7 @@ pub async fn get_item_stats_by_date_and_location(
     unique_name: &str,
     interval: &str,
 ) -> Result<Vec<queries::ItemStatsByDateAndLocation>, sqlx::Error> {
-    return sqlx::query_as!(
+    sqlx::query_as!(
         queries::ItemStatsByDateAndLocation,
         "SELECT
     time_bucket($2::TEXT::INTERVAL, date) as date,
@@ -392,5 +392,5 @@ GROUP BY
         interval
     )
     .fetch_all(pool)
-    .await;
+    .await
 }
