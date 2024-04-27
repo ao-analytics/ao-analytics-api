@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n            market_order.id,\n            location.id as location_id,\n            market_order.item_unique_name,\n            quality_level,\n            unit_price_silver, \n            amount,\n            auction_type, \n            expires_at, \n            updated_at\n        FROM\n            market_order\n            JOIN location ON location_id = location.id\n            JOIN item_data ON market_order.item_unique_name = item_data.item_unique_name\n            JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name\n        WHERE\n            expires_at > NOW()\n            AND market_order.item_unique_name = $1\n            AND ( $2::TEXT IS NULL OR location.id = $2 )\n            AND ( $3::TEXT IS NULL OR auction_type = $3 )\n            AND ( $4::INT IS NULL OR quality_level = $4 )\n            AND ( $5::INT IS NULL OR tier = $4 )\n            AND ( $6::INT IS NULL OR enchantment_level = $5 )\n        ORDER BY unit_price_silver ASC\n        OFFSET $7\n        LIMIT $8",
+  "query": "SELECT\n    market_order.id,\n    location.id as location_id,\n    market_order.item_unique_name,\n    quality_level,\n    unit_price_silver,\n    amount,\n    auction_type,\n    expires_at,\n    updated_at\nFROM\n    market_order\n    JOIN item_data ON market_order.item_unique_name = item_data.item_unique_name\n    JOIN location ON location_id = location.id\n    JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name\nWHERE\n    expires_at > NOW()\n    AND lang = $1\n    AND ( $3::TEXT IS NULL OR location.id = $3 )\n    AND ( $4::TEXT IS NULL OR auction_type = $4 )\n    AND ( $5::INT IS NULL OR quality_level = $5 )\n    AND ( $6::INT IS NULL OR enchantment_level = $6 )\n    AND ( $7::INT IS NULL OR tier = $7 )\nORDER BY\n    SIMILARITY(localized_name.name, $2) DESC,\n    unit_price_silver ASC\nOFFSET $8\nLIMIT $9",
   "describe": {
     "columns": [
       {
@@ -54,6 +54,7 @@
         "Text",
         "Text",
         "Text",
+        "Text",
         "Int4",
         "Int4",
         "Int4",
@@ -73,5 +74,5 @@
       false
     ]
   },
-  "hash": "03ef4e37c07d316a746344d586d826394804e1f9651642aee1c446cce07646aa"
+  "hash": "4b70c31b111e34cdace4697e1e82ae8ba48d5758109762715d5f5cdde6520316"
 }

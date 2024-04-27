@@ -54,7 +54,7 @@ pub struct MarketOrder {
     pub amount: i32,
     pub auction_type: String,
     pub expires_at: chrono::DateTime<Utc>,
-    pub updated_at: chrono::DateTime<Utc>
+    pub updated_at: chrono::DateTime<Utc>,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
@@ -146,7 +146,7 @@ pub struct SearchResult {
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
-pub struct ItemStatsByDayAndLocation {
+pub struct ItemStatsByDateAndLocation {
     pub date: Option<chrono::DateTime<Utc>>,
     pub item_unique_name: Option<String>,
     pub location_id: Option<String>,
@@ -162,7 +162,7 @@ pub struct ItemStatsByDayAndLocation {
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
-pub struct ItemStatsByDay {
+pub struct ItemStatsByDate {
     pub date: Option<chrono::DateTime<Utc>>,
     pub item_unique_name: Option<String>,
     pub total_count: Option<i64>,

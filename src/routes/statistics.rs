@@ -30,25 +30,29 @@ async fn get_market_order_statistics(
         None => return StatusCode::BAD_REQUEST.into_response(),
     };
 
-    if group_by == "updated_at" {
-        let market_order_count_by_updated_at =
-            utils::db::get_market_orders_count_by_updated_at(&pool)
+    let interval = match group_by {
+        group_by if group_by.contains("hour") => "1 hour",
+        group_by if group_by.contains("day") => "1 day",
+        group_by if group_by.contains("week") => "1 week",
+        group_by if group_by.contains("month") => "1 month",
+        _ => return StatusCode::BAD_REQUEST.into_response(),
+    };
+
+    if group_by.contains("location") {
+        let market_order_count_by_location =
+            utils::db::get_market_orders_count_by_date_and_location(&pool, &interval)
                 .await
                 .unwrap();
 
-        return Json(market_order_count_by_updated_at).into_response();
+        return Json(market_order_count_by_location).into_response();
     }
 
-    if group_by.contains("updated_at") && group_by.contains("location") {
-        let market_order_count_by_updated_at_and_location =
-            utils::db::get_market_orders_count_by_updated_at_and_location(&pool)
-                .await
-                .unwrap();
+    let market_order_count_by_updated_at =
+        utils::db::get_market_orders_count_by_date(&pool, &interval)
+            .await
+            .unwrap();
 
-        return Json(market_order_count_by_updated_at_and_location).into_response();
-    }
-
-    return StatusCode::BAD_REQUEST.into_response();
+    return Json(market_order_count_by_updated_at).into_response();
 }
 
 async fn get_market_order_count(
@@ -72,14 +76,21 @@ async fn get_item_stats(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-
     let group_by = match query.get("group_by") {
-        Some(group_by) => group_by,
+        Some(group_by) => group_by.as_str(),
         None => return StatusCode::BAD_REQUEST.into_response(),
     };
 
-    if group_by == "updated_at" {
-        let result = utils::db::get_item_stats_by_updated_at(&pool, &id).await;
+    let interval = match group_by {
+        group_by if group_by.contains("hour") => "1 hour",
+        group_by if group_by.contains("day") => "1 day",
+        group_by if group_by.contains("week") => "1 week",
+        group_by if group_by.contains("month") => "1 month",
+        _ => return StatusCode::BAD_REQUEST.into_response(),
+    };
+
+    if group_by.contains("location") {
+        let result = utils::db::get_item_stats_by_date_and_location(&pool, &id, &interval).await;
 
         return match result {
             Ok(item_stats) => Json(item_stats).into_response(),
@@ -87,20 +98,16 @@ async fn get_item_stats(
                 warn!("{:?}", e);
                 return StatusCode::NOT_FOUND.into_response();
             }
-        }
+        };
     }
 
-    if group_by.contains("updated_at") && group_by.contains("location") {
-        let result = utils::db::get_item_stats_by_updated_at_and_location(&pool, &id).await;
+    let result = utils::db::get_item_stats_by_date(&pool, &id, &interval).await;
 
-        return match result {
-            Ok(item_stats) => Json(item_stats).into_response(),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::NOT_FOUND.into_response();
-            }
+    return match result {
+        Ok(item_stats) => Json(item_stats).into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
         }
-    }
-
-    return StatusCode::BAD_REQUEST.into_response();
+    };
 }

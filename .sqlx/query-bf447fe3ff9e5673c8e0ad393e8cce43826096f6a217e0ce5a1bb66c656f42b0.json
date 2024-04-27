@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n    time_bucket($1::TEXT::INTERVAL, date) as date,\n    SUM(count)::BIGINT as count\nFROM\n    market_orders_count_by_updated_at\nGROUP BY\n    time_bucket($1::TEXT::INTERVAL, date)\nORDER BY\n    date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "date",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "bf447fe3ff9e5673c8e0ad393e8cce43826096f6a217e0ce5a1bb66c656f42b0"
+}
