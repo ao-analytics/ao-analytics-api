@@ -241,7 +241,7 @@ pub async fn get_market_orders_count_by_date(
     time_bucket($1::TEXT::INTERVAL, date) as date,
     SUM(count)::BIGINT as count
 FROM
-    market_orders_count_by_updated_at
+    market_orders_count_by_hour
 GROUP BY
     time_bucket($1::TEXT::INTERVAL, date)
 ORDER BY
@@ -263,8 +263,8 @@ pub async fn get_market_orders_count_by_date_and_location(
     location.name as location,
     SUM(count)::BIGINT as count
 FROM
-    market_orders_count_by_updated_at_and_location
-    JOIN location ON location.id = market_orders_count_by_updated_at_and_location.location_id
+    market_orders_count_by_hour_and_location
+    JOIN location ON location.id = market_orders_count_by_hour_and_location.location_id
 GROUP BY
     time_bucket($1::TEXT::INTERVAL, date),
     location.name
