@@ -351,7 +351,9 @@ WHERE
     item_unique_name = $1
 GROUP BY
     time_bucket($2::TEXT::INTERVAL, date),
-    item_unique_name",
+    item_unique_name
+ORDER BY
+    date DESC",
         unique_name,
         interval
     )
@@ -387,6 +389,8 @@ GROUP BY
     time_bucket($2::TEXT::INTERVAL, date),
     item_unique_name,
     location_id
+ORDER BY
+    date DESC
     ",
         unique_name,
         interval
