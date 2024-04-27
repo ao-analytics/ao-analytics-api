@@ -11,10 +11,7 @@ impl Config {
         let db_url = get_var_from_env_or_dotenv("DATABASE_URL")?;
         let port = get_var_from_env_or_dotenv("PORT")?.parse::<i32>().ok()?;
 
-        Some(Config {
-            db_url,
-            port,
-        })
+        Some(Config { db_url, port })
     }
 }
 
@@ -26,6 +23,6 @@ fn get_var_from_env_or_dotenv(name: &str) -> Option<String> {
         Err(_) => {
             error!("{} is not set", name);
             return None;
-        },
+        }
     }
 }

@@ -90,10 +90,21 @@ async fn get_item_localizations(
         }
     };
 
-    let item = models::db::Localizations {
+    let item = models::queries::Localizations {
         unique_name: unique_name.to_string(),
-        names: names.iter().map(|localized_name| (localized_name.lang.clone(), localized_name.name.clone())).collect(),
-        descriptions: descriptions.iter().map(|localized_name| (localized_name.lang.clone(), localized_name.description.clone())).collect(),
+        names: names
+            .iter()
+            .map(|localized_name| (localized_name.lang.clone(), localized_name.name.clone()))
+            .collect(),
+        descriptions: descriptions
+            .iter()
+            .map(|localized_name| {
+                (
+                    localized_name.lang.clone(),
+                    localized_name.description.clone(),
+                )
+            })
+            .collect(),
     };
 
     Json(item).into_response()
