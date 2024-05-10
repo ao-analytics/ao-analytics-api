@@ -44,10 +44,7 @@ async fn main() {
         .nest("/items", routes::items::get_router())
         .nest("/statistics", routes::statistics::get_router())
         .nest("/orders", routes::orders::get_router())
-        .nest("/locations", routes::locations::get_router());
-
-    let app = Router::new()
-        .nest("/api", routes)
+        .nest("/locations", routes::locations::get_router())
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .with_state(pool);
@@ -58,5 +55,5 @@ async fn main() {
 
     info!("Server running on port {}", config.port);
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, routes).await.unwrap();
 }
