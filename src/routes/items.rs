@@ -110,14 +110,26 @@ async fn get_item_localizations(
     Json(item).into_response()
 }
 
+async fn get_item_market_history(
+    Path(unique_name): Path<String>,
+    Query(query): Query<HashMap<String, String>>,
+    State(pool): State<Pool<Postgres>>,
+) -> Response<Body> {
+    todo!()
+}
+
 async fn get_item_market_orders(
     Path(unique_name): Path<String>,
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let location_id: Option<String> = query.get("location_id").map(|location_id| location_id.to_string());
+    let location_id: Option<String> = query
+        .get("location_id")
+        .map(|location_id| location_id.to_string());
 
-    let auction_type: Option<String> = query.get("auction_type").map(|auction_type| auction_type.to_string());
+    let auction_type: Option<String> = query
+        .get("auction_type")
+        .map(|auction_type| auction_type.to_string());
 
     let quality_level: Option<i32> = match query.get("quality_level") {
         Some(quality_level) => match quality_level.parse::<i32>() {
