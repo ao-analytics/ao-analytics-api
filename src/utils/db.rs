@@ -9,7 +9,8 @@ pub async fn search_items_by_localized_name(
 ) -> Result<Vec<queries::LocalizedName>, sqlx::Error> {
     sqlx::query_as!(
         queries::LocalizedName,
-        "SELECT
+        "
+SELECT
     item_unique_name,
     lang,
     name
@@ -33,7 +34,8 @@ pub async fn get_item_data_by_unique_name(
 ) -> Result<queries::ItemData, sqlx::Error> {
     sqlx::query_as!(
         queries::ItemData,
-        "SELECT
+        "
+SELECT
     unique_name,
     enchantment_level,
     tier,
@@ -65,7 +67,8 @@ pub async fn query_market_orders(
 ) -> Result<Vec<queries::MarketOrder>, sqlx::Error> {
     sqlx::query_as!(
         queries::MarketOrder,
-        "SELECT
+        "
+SELECT
     market_order.id,
     location.id as location_id,
     market_order.item_unique_name,
@@ -118,7 +121,8 @@ pub async fn query_market_orders_with_localized_name(
 ) -> Result<Vec<queries::MarketOrder>, sqlx::Error> {
     sqlx::query_as!(
         queries::MarketOrder,
-        "SELECT
+        "
+SELECT
     market_order.id,
     location.id as location_id,
     market_order.item_unique_name,
@@ -166,7 +170,8 @@ pub async fn get_localized_names_by_unique_name(
 ) -> Result<Vec<queries::LocalizedName>, sqlx::Error> {
     sqlx::query_as!(
         queries::LocalizedName,
-        "SELECT
+        "
+SELECT
     item_unique_name,
     lang,
     name
@@ -184,7 +189,8 @@ pub async fn get_localized_descriptions_by_unique_name(
 ) -> Result<Vec<queries::LocalizedDescription>, sqlx::Error> {
     sqlx::query_as!(
         queries::LocalizedDescription,
-        "SELECT
+        "
+SELECT
     item_unique_name,
     lang,
     description
@@ -206,7 +212,8 @@ pub async fn get_market_orders_count(
         Some(auction_type) => {
             sqlx::query_as!(
                 queries::MarketOrderCount,
-                "SELECT
+                "
+SELECT
     COUNT(*) as count
 FROM
     market_order
@@ -237,7 +244,8 @@ pub async fn get_market_orders_count_by_date(
 ) -> Result<Vec<queries::MarketOrderCountByUpdatedAt>, sqlx::Error> {
     sqlx::query_as!(
         queries::MarketOrderCountByUpdatedAt,
-        "SELECT
+        "
+SELECT
     time_bucket($1::TEXT::INTERVAL, date) as date,
     SUM(count)::BIGINT as count
 FROM
@@ -258,7 +266,8 @@ pub async fn get_market_orders_count_by_date_and_location(
 ) -> Result<Vec<queries::MarketOrderCountByUpdatedAtAndLocation>, sqlx::Error> {
     sqlx::query_as!(
         queries::MarketOrderCountByUpdatedAtAndLocation,
-        "SELECT
+        "
+SELECT
     time_bucket($1::TEXT::INTERVAL, date) as date,
     location.name as location,
     SUM(count)::BIGINT as count
@@ -282,7 +291,8 @@ pub async fn query_locations(
 ) -> Result<Vec<queries::Location>, sqlx::Error> {
     sqlx::query_as!(
         queries::Location,
-        "SELECT
+        "
+SELECT
     location.id,
     location.name
 FROM
@@ -313,7 +323,8 @@ pub async fn get_locations_by_id(
 ) -> Result<queries::Location, sqlx::Error> {
     sqlx::query_as!(
         queries::Location,
-        "SELECT
+        "
+SELECT
     location.id,
     location.name
 FROM
@@ -333,7 +344,8 @@ pub async fn get_item_stats_by_date(
 ) -> Result<Vec<queries::ItemStatsByDate>, sqlx::Error> {
     sqlx::query_as!(
         queries::ItemStatsByDate,
-        "SELECT
+        "
+SELECT
     time_bucket($2::TEXT::INTERVAL, date) as date,
     item_unique_name,
     SUM(total_count)::BIGINT as total_count,
@@ -368,7 +380,8 @@ pub async fn get_item_stats_by_date_and_location(
 ) -> Result<Vec<queries::ItemStatsByDateAndLocation>, sqlx::Error> {
     sqlx::query_as!(
         queries::ItemStatsByDateAndLocation,
-        "SELECT
+        "
+SELECT
     time_bucket($2::TEXT::INTERVAL, date) as date,
     item_unique_name,
     location_id,

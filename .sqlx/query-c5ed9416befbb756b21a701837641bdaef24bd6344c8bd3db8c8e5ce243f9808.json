@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n    item_unique_name,\n    lang,\n    name\nFROM localized_name\n    WHERE item_unique_name = $1",
+  "query": "\nSELECT\n    item_unique_name,\n    lang,\n    name\nFROM localized_name\n    WHERE item_unique_name = $1",
   "describe": {
     "columns": [
       {
@@ -30,5 +30,5 @@
       false
     ]
   },
-  "hash": "37cebba09c4e8c5a794875b57d9e245319dac5b409ad2b454a30c739854f486e"
+  "hash": "c5ed9416befbb756b21a701837641bdaef24bd6344c8bd3db8c8e5ce243f9808"
 }
