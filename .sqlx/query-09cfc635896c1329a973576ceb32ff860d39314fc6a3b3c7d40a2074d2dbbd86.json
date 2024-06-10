@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT\n    unique_name,\n    enchantment_level,\n    tier,\n    shop_sub_category.id as shop_sub_category,\n    weight\nFROM\n    item_data\n    JOIN item ON item.unique_name = item_data.item_unique_name\n    JOIN shop_sub_category ON shop_sub_category_id = shop_sub_category.id\n    JOIN shop_category ON shop_sub_category.shop_category_id = shop_category.id\nWHERE\n    item_unique_name = $1",
+  "query": "\nSELECT\n    unique_name,\n    enchantment_level,\n    tier,\n    shop_sub_category.id as shop_sub_category,\n    weight\nFROM\n    item_data\n    JOIN item ON item.unique_name = item_data.item_unique_name\n    JOIN shop_sub_category ON shop_sub_category_id = shop_sub_category.id\n    JOIN shop_category ON shop_sub_category.shop_category_id = shop_category.id\nWHERE\n    item_unique_name = $1",
   "describe": {
     "columns": [
       {
@@ -42,5 +42,5 @@
       true
     ]
   },
-  "hash": "bdecbc4d4c8f675f178dd573ae53b9608724bb57143c020f56525c5bb32ec3c9"
+  "hash": "09cfc635896c1329a973576ceb32ff860d39314fc6a3b3c7d40a2074d2dbbd86"
 }
