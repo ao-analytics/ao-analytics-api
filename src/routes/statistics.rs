@@ -18,6 +18,7 @@ pub fn get_router() -> Router<Pool<Postgres>> {
     Router::new()
         .route("/orders", get(get_market_order_statistics))
         .route("/orders/count", get(get_market_order_count))
+        .route("/histories/count", get(get_market_history_count))
         .route("/items/:id", get(get_item_stats))
 }
 
@@ -59,13 +60,21 @@ async fn get_market_order_count(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let auction_type: Option<String> = query.get("auction_type").map(|auction_type| auction_type.to_string());
+    let auction_type: Option<String> = query
+        .get("auction_type")
+        .map(|auction_type| auction_type.to_string());
 
     let market_order_count = utils::db::get_market_orders_count(auction_type, &pool)
         .await
         .unwrap();
 
     Json(market_order_count).into_response()
+}
+
+async fn get_market_history_count(State(pool): State<Pool<Postgres>>) -> Response<Body> {
+    let market_history_count = utils::db::get_market_histories_count(&pool).await.unwrap();
+
+    Json(market_history_count).into_response()
 }
 
 async fn get_item_stats(

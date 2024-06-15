@@ -238,6 +238,21 @@ FROM
     }
 }
 
+pub async fn get_market_histories_count(
+    pool: &PgPool,
+) -> Result<queries::MarketHistoryCount, sqlx::Error> {
+    sqlx::query_as!(
+        queries::MarketHistoryCount,
+        "
+SELECT
+    COUNT(*) as count
+FROM
+    market_history"
+    )
+    .fetch_one(pool)
+    .await
+}
+
 pub async fn get_market_orders_count_by_date(
     pool: &PgPool,
     interval: &str,
@@ -407,6 +422,43 @@ ORDER BY
     ",
         unique_name,
         interval
+    )
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn get_item_market_history(
+    pool: &sqlx::Pool<sqlx::Postgres>,
+    unique_name: String,
+    timescale: &i32,
+    location_id: Option<String>,
+    quality_level: Option<i32>,
+) -> Result<Vec<queries::ItemMarketHistory>, sqlx::Error> {
+    sqlx::query_as!(
+        queries::ItemMarketHistory,
+        "
+SELECT
+    item_unique_name,
+    timestamp,
+    location_id,
+    quality_level,
+    item_amount,
+    silver_amount,
+    updated_at
+FROM
+    market_history
+WHERE
+    item_unique_name = $1
+    AND timescale = $2
+    AND ( $3::TEXT IS NULL OR location_id = $3 )
+    AND ( $4::INT IS NULL OR quality_level = $4 )
+ORDER BY
+    timestamp DESC
+    ",
+        unique_name,
+        timescale,
+        location_id,
+        quality_level
     )
     .fetch_all(pool)
     .await

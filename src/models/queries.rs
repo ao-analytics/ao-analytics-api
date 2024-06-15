@@ -63,6 +63,11 @@ pub struct MarketOrderCount {
 }
 
 #[derive(sqlx::FromRow, serde::Serialize)]
+pub struct MarketHistoryCount {
+    pub count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
 pub struct MarketOrderCountByItem {
     pub item_unique_name: String,
     pub count: Option<i64>,
@@ -174,4 +179,28 @@ pub struct ItemStatsByDate {
     pub min_unit_price_silver_offer: Option<i32>,
     pub avg_unit_price_silver_offer: Option<i32>,
     pub sum_amount_offer: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct ItemMarketHistory {
+    pub item_unique_name: String,
+    pub timestamp: chrono::DateTime<Utc>,
+    pub location_id: String,
+    pub quality_level: i32,
+    pub item_amount: i32,
+    pub silver_amount: i32,
+    pub updated_at: chrono::DateTime<Utc>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct ItemMarketHistoryCountByUpdatedAt {
+    pub date: Option<chrono::DateTime<Utc>>,
+    pub count: Option<i64>,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize)]
+pub struct ItemMarketHistoryCountByUpdatedAtAndLocation {
+    pub date: Option<chrono::DateTime<Utc>>,
+    pub location: Option<String>,
+    pub count: Option<i64>,
 }
