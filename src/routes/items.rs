@@ -19,6 +19,7 @@ pub fn get_router() -> Router<Pool<Postgres>> {
         .route("/", get(search_items))
         .route("/:id/localizations", get(get_item_localizations))
         .route("/:id/orders", get(get_item_market_orders))
+        .route("/:id/history", get(get_item_market_history))
         .route("/:id/data", get(get_item_data))
 }
 
@@ -115,7 +116,50 @@ async fn get_item_market_history(
     Query(query): Query<HashMap<String, String>>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    todo!()
+    let timescale = match query.get("timescale") {
+        Some(timescale) => match timescale.parse::<i32>() {
+            Ok(timescale) => timescale,
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
+        },
+        None => return StatusCode::BAD_REQUEST.into_response(),
+    };
+
+    let location_id: Option<String> = query
+        .get("location_id")
+        .map(|location_id| location_id.to_string());
+
+    let quality_level = match query.get("quality_level") {
+        Some(quality_level) => match quality_level.parse::<i32>() {
+            Ok(quality_level) => Some(quality_level),
+            Err(e) => {
+                warn!("{:?}", e);
+                return StatusCode::BAD_REQUEST.into_response();
+            }
+        },
+        None => None,
+    };
+
+    let result = utils::db::get_item_market_history(
+        &pool,
+        unique_name,
+        &timescale,
+        location_id,
+        quality_level,
+    )
+    .await;
+
+    let history = match result {
+        Ok(history) => history,
+        Err(e) => {
+            warn!("{:?}", e);
+            return StatusCode::NOT_FOUND.into_response();
+        }
+    };
+
+    Json(history).into_response()
 }
 
 async fn get_item_market_orders(
