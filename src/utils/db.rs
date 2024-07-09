@@ -36,16 +36,9 @@ pub async fn get_item_data_by_unique_name(
         queries::ItemData,
         "
 SELECT
-    unique_name,
-    enchantment_level,
-    tier,
-    shop_sub_category.id as shop_sub_category,
-    weight
+    data
 FROM
     item_data
-    JOIN item ON item.unique_name = item_data.item_unique_name
-    JOIN shop_sub_category ON shop_sub_category_id = shop_sub_category.id
-    JOIN shop_category ON shop_sub_category.shop_category_id = shop_category.id
 WHERE
     item_unique_name = $1",
         unique_name
@@ -80,17 +73,16 @@ SELECT
     updated_at
 FROM
     market_order
+    JOIN item_data ON (market_order.item_unique_name = item_data.item_unique_name OR REGEXP_REPLACE(market_order.item_unique_name, '@.', '') = item_data.item_unique_name)
     JOIN location ON location_id = location.id
-    JOIN item_data ON market_order.item_unique_name = item_data.item_unique_name
-    JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name
 WHERE
     expires_at > NOW()
     AND market_order.item_unique_name = $1
     AND ( $2::TEXT IS NULL OR location.id = $2 )
     AND ( $3::TEXT IS NULL OR auction_type = $3 )
     AND ( $4::INT IS NULL OR quality_level = $4 )
-    AND ( $5::INT IS NULL OR tier = $4 )
-    AND ( $6::INT IS NULL OR enchantment_level = $5 )
+    AND ( $5::INT IS NULL OR (item_data.data->>'@tier')::INT = $5 )
+    AND ( $6::INT IS NULL OR COALESCE(NULLIF(item_data.data->>'@enchantmentlevel', ''), NULLIF(SPLIT_PART(market_order.item_unique_name, '@', 2), ''), '0')::INT = $6 )
 ORDER BY unit_price_silver ASC
 OFFSET $7
 LIMIT $8",
@@ -98,8 +90,8 @@ LIMIT $8",
         location_id,
         auction_type,
         quality_level,
-        enchantment_level,
         tier,
+        enchantment_level,
         offset,
         limit,
     )
@@ -134,7 +126,7 @@ SELECT
     updated_at
 FROM
     market_order
-    JOIN item_data ON market_order.item_unique_name = item_data.item_unique_name
+    JOIN item_data ON (market_order.item_unique_name = item_data.item_unique_name OR REGEXP_REPLACE(market_order.item_unique_name, '@.', '') = item_data.item_unique_name)
     JOIN location ON location_id = location.id
     JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name
 WHERE
@@ -143,8 +135,8 @@ WHERE
     AND ( $3::TEXT IS NULL OR location.id = $3 )
     AND ( $4::TEXT IS NULL OR auction_type = $4 )
     AND ( $5::INT IS NULL OR quality_level = $5 )
-    AND ( $6::INT IS NULL OR enchantment_level = $6 )
-    AND ( $7::INT IS NULL OR tier = $7 )
+    AND ( $6::INT IS NULL OR (item_data.data->>'@tier')::INT = $6 )
+    AND ( $7::INT IS NULL OR COALESCE(NULLIF(item_data.data->>'@enchantmentlevel', ''), NULLIF(SPLIT_PART(market_order.item_unique_name, '@', 2), ''), '0')::INT = $7 )
 ORDER BY
     SIMILARITY(localized_name.name, $2) DESC,
     unit_price_silver ASC
@@ -155,8 +147,8 @@ LIMIT $9",
         location_id,
         auction_type,
         quality_level,
-        enchantment_level,
         tier,
+        enchantment_level,
         offset,
         limit,
     )
