@@ -65,6 +65,8 @@ SELECT
     market_order.id,
     location.id as location_id,
     market_order.item_unique_name,
+    tier,
+    enchantment_level,
     quality_level,
     unit_price_silver,
     amount,
@@ -118,6 +120,8 @@ SELECT
     market_order.id,
     location.id as location_id,
     market_order.item_unique_name,
+    tier,
+    enchantment_level,
     quality_level,
     unit_price_silver,
     amount,
@@ -126,7 +130,6 @@ SELECT
     updated_at
 FROM
     market_order
-    JOIN item_data ON (market_order.item_unique_name = item_data.item_unique_name OR REGEXP_REPLACE(market_order.item_unique_name, '@.', '') = item_data.item_unique_name)
     JOIN location ON location_id = location.id
     JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name
 WHERE
@@ -135,8 +138,8 @@ WHERE
     AND ( $3::TEXT IS NULL OR location.id = $3 )
     AND ( $4::TEXT IS NULL OR auction_type = $4 )
     AND ( $5::INT IS NULL OR quality_level = $5 )
-    AND ( $6::INT IS NULL OR (item_data.data->>'@tier')::INT = $6 )
-    AND ( $7::INT IS NULL OR COALESCE(NULLIF(item_data.data->>'@enchantmentlevel', ''), NULLIF(SPLIT_PART(market_order.item_unique_name, '@', 2), ''), '0')::INT = $7 )
+    AND ( $6::INT IS NULL OR tier = $6 )
+    AND ( $7::INT IS NULL OR enchantment_level = $7 )
 ORDER BY
     SIMILARITY(localized_name.name, $2) DESC,
     unit_price_silver ASC
@@ -219,7 +222,8 @@ WHERE
         None => {
             sqlx::query_as!(
                 queries::MarketOrderCount,
-                "SELECT
+                "
+SELECT
     COUNT(*) as count
 FROM
     market_order"
@@ -236,10 +240,7 @@ pub async fn get_market_histories_count(
     sqlx::query_as!(
         queries::MarketHistoryCount,
         "
-SELECT
-    COUNT(*) as count
-FROM
-    market_history"
+SELECT APPROXIMATE_ROW_COUNT('market_history') as count"
     )
     .fetch_one(pool)
     .await
