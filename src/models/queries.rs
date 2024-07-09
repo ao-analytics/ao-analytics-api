@@ -46,6 +46,8 @@ pub struct MarketOrder {
     pub id: i64,
     pub item_unique_name: String,
     pub location_id: String,
+    pub tier: i32,
+    pub enchantment_level: i32,
     pub quality_level: i32,
     pub unit_price_silver: i32,
     pub amount: i32,
