@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT\n    market_order.id,\n    location.id as location_id,\n    market_order.item_unique_name,\n    quality_level,\n    unit_price_silver,\n    amount,\n    auction_type,\n    expires_at,\n    updated_at\nFROM\n    market_order\n    JOIN location ON location_id = location.id\n    JOIN item_data ON market_order.item_unique_name = item_data.item_unique_name\n    JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name\nWHERE\n    expires_at > NOW()\n    AND market_order.item_unique_name = $1\n    AND ( $2::TEXT IS NULL OR location.id = $2 )\n    AND ( $3::TEXT IS NULL OR auction_type = $3 )\n    AND ( $4::INT IS NULL OR quality_level = $4 )\n    AND ( $5::INT IS NULL OR tier = $4 )\n    AND ( $6::INT IS NULL OR enchantment_level = $5 )\nORDER BY unit_price_silver ASC\nOFFSET $7\nLIMIT $8",
+  "query": "\nSELECT\n    market_order.id,\n    location.id as location_id,\n    market_order.item_unique_name,\n    quality_level,\n    unit_price_silver,\n    amount,\n    auction_type,\n    expires_at,\n    updated_at\nFROM\n    market_order\n    JOIN item_data ON (market_order.item_unique_name = item_data.item_unique_name OR REGEXP_REPLACE(market_order.item_unique_name, '@.', '') = item_data.item_unique_name)\n    JOIN location ON location_id = location.id\n    JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name\nWHERE\n    expires_at > NOW()\n    AND lang = $1\n    AND ( $3::TEXT IS NULL OR location.id = $3 )\n    AND ( $4::TEXT IS NULL OR auction_type = $4 )\n    AND ( $5::INT IS NULL OR quality_level = $5 )\n    AND ( $6::INT IS NULL OR (item_data.data->>'@tier')::INT = $6 )\n    AND ( $7::INT IS NULL OR COALESCE(NULLIF(item_data.data->>'@enchantmentlevel', ''), NULLIF(SPLIT_PART(market_order.item_unique_name, '@', 2), ''), '0')::INT = $7 )\nORDER BY\n    SIMILARITY(localized_name.name, $2) DESC,\n    unit_price_silver ASC\nOFFSET $8\nLIMIT $9",
   "describe": {
     "columns": [
       {
@@ -54,6 +54,7 @@
         "Text",
         "Text",
         "Text",
+        "Text",
         "Int4",
         "Int4",
         "Int4",
@@ -73,5 +74,5 @@
       false
     ]
   },
-  "hash": "f933d6f1a6f2c7828bd038459a5f5bdeda1681fd0f0a0c5d26479678d6e37e54"
+  "hash": "c023d96464833311e222b93d432d8a91cd724e3c27bc88afd33bdc45d5e95a8f"
 }
