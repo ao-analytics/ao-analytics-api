@@ -26,7 +26,8 @@ async fn main() {
                 .unwrap_or_else(|_| "tower_http=debug,axum::rejection=trace".into()),
         )
         .with(tracing_subscriber::fmt::layer())
-        .try_init();
+        .try_init()
+        .unwrap();
 
     let config = utils::config::Config::from_env();
 
