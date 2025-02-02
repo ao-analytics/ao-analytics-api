@@ -1,16 +1,10 @@
 use std::collections::HashMap;
 
 use chrono::Utc;
-use serde_json::Value;
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Item {
     pub unique_name: String,
-}
-
-#[derive(sqlx::FromRow, serde::Serialize)]
-pub struct ItemData {
-    pub data: Value,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, Clone)]

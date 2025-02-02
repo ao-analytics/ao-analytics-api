@@ -1,11 +1,12 @@
+use serde_json::Value;
 use sqlx::PgPool;
 
 use crate::models::queries;
 
 pub async fn search_items_by_localized_name(
     pool: &PgPool,
-    lang: &str,
-    item: &str,
+    lang: String,
+    item: String,
 ) -> Result<Vec<queries::LocalizedName>, sqlx::Error> {
     sqlx::query_as!(
         queries::LocalizedName,
@@ -31,9 +32,8 @@ LIMIT 10",
 pub async fn get_item_data_by_unique_name(
     pool: &PgPool,
     unique_name: &String,
-) -> Result<queries::ItemData, sqlx::Error> {
-    sqlx::query_as!(
-        queries::ItemData,
+) -> Result<Value, sqlx::Error> {
+    sqlx::query!(
         "
 SELECT
     data
@@ -45,6 +45,7 @@ WHERE
     )
     .fetch_one(pool)
     .await
+    .map(|x| x.data)
 }
 
 pub async fn query_market_orders(
@@ -202,48 +203,30 @@ WHERE
 pub async fn get_market_orders_count(
     auction_type: Option<String>,
     pool: &PgPool,
-) -> Result<queries::MarketOrderCount, sqlx::Error> {
-    match auction_type {
-        Some(auction_type) => {
-            sqlx::query_as!(
-                queries::MarketOrderCount,
-                "
+) -> Result<Option<i64>, sqlx::Error> {
+    sqlx::query!(
+        "
 SELECT
-    COUNT(*) as count
+	COUNT(*) as count
 FROM
-    market_order
+	market_order
 WHERE
-    auction_type = $1",
-                auction_type
-            )
-            .fetch_one(pool)
-            .await
-        }
-        None => {
-            sqlx::query_as!(
-                queries::MarketOrderCount,
-                "
-SELECT
-    COUNT(*) as count
-FROM
-    market_order"
-            )
-            .fetch_one(pool)
-            .await
-        }
-    }
+	($1::TEXT IS NULL OR auction_type = $1)",
+        auction_type
+    )
+    .fetch_one(pool)
+    .await
+    .map(|x| x.count)
 }
 
-pub async fn get_market_histories_count(
-    pool: &PgPool,
-) -> Result<queries::MarketHistoryCount, sqlx::Error> {
-    sqlx::query_as!(
-        queries::MarketHistoryCount,
+pub async fn get_market_histories_count(pool: &PgPool) -> Result<Option<i64>, sqlx::Error> {
+    sqlx::query!(
         "
 SELECT APPROXIMATE_ROW_COUNT('market_history') as count"
     )
     .fetch_one(pool)
     .await
+    .map(|x| x.count)
 }
 
 pub async fn get_market_orders_count_by_date(
@@ -423,7 +406,7 @@ ORDER BY
 pub async fn get_item_market_history(
     pool: &sqlx::Pool<sqlx::Postgres>,
     unique_name: String,
-    timescale: &i32,
+    timescale: i32,
     location_id: Option<String>,
     quality_level: Option<i32>,
 ) -> Result<Vec<queries::ItemMarketHistory>, sqlx::Error> {

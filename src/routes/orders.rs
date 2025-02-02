@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
 use axum::body::Body;
@@ -18,103 +17,50 @@ pub fn get_router() -> Router<Pool<Postgres>> {
     Router::new().route("/", get(get_market_orders))
 }
 
+#[derive(Deserialize)]
+struct MarketOrderQuery {
+    item_name: Option<String>,
+    lang: Option<String>,
+    location_id: Option<String>,
+    auction_type: Option<String>,
+    quality_level: Option<i32>,
+    enchantment_level: Option<i32>,
+    tier: Option<i32>,
+    limit: Option<i64>,
+    offset: Option<i64>,
+}
+
 async fn get_market_orders(
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<MarketOrderQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let localized_name = query.get("item_name").map(|localized_name| localized_name.to_string());
+    let lang = query.lang.unwrap_or("EN-US".to_string());
 
-    let lang = match query.get("lang") {
-        Some(lang) => lang.to_string(),
-        None => "EN-US".to_string(),
-    };
+    let limit = query
+        .limit
+        .map_or(100, |limit| if limit > 100 { 100 } else { limit });
 
-    let location_id: Option<String> = query.get("location_id").map(|location_id| location_id.to_string());
-
-    let auction_type: Option<String> = query.get("auction_type").map(|auction_type| auction_type.to_string());
-
-    let quality_level: Option<i32> = match query.get("quality_level") {
-        Some(quality_level) => match quality_level.parse::<i32>() {
-            Ok(quality_level) => Some(quality_level),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let enchantment_level: Option<i32> = match query.get("enchantment_level") {
-        Some(enchantment_level) => match enchantment_level.parse::<i32>() {
-            Ok(enchantment_level) => Some(enchantment_level),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let tier: Option<i32> = match query.get("tier") {
-        Some(tier) => match tier.parse::<i32>() {
-            Ok(tier) => Some(tier),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let limit = match query.get("limit") {
-        Some(limit) => match limit.parse::<i64>() {
-            Ok(limit) => {
-                if limit > 100 {
-                    100
-                } else {
-                    limit
-                }
-            }
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => 100,
-    };
-
-    let offset = match query.get("offset") {
-        Some(offset) => match offset.parse::<i64>() {
-            Ok(offset) => offset,
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => 0,
-    };
+    let offset = query.offset.unwrap_or(0);
 
     let result = utils::db::query_market_orders_with_localized_name(
         &pool,
-        localized_name,
+        query.item_name,
         lang,
-        location_id,
-        auction_type,
-        quality_level,
-        enchantment_level,
-        tier,
+        query.location_id,
+        query.auction_type,
+        query.quality_level,
+        query.enchantment_level,
+        query.tier,
         limit,
         offset,
     )
     .await;
 
-    let orders = match result {
-        Ok(orders) => orders,
+    match result {
+        Ok(orders) => Json(orders).into_response(),
         Err(e) => {
             warn!("{:?}", e);
-            return StatusCode::NOT_FOUND.into_response();
+            StatusCode::NOT_FOUND.into_response()
         }
-    };
-
-    Json(orders).into_response()
+    }
 }

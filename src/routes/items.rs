@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
 use axum::body::Body;
@@ -12,7 +11,8 @@ use axum::Router;
 
 use tracing::warn;
 
-use crate::{models, utils};
+use crate::models::queries::Localizations;
+use crate::utils;
 
 pub fn get_router() -> Router<Pool<Postgres>> {
     Router::new()
@@ -23,31 +23,27 @@ pub fn get_router() -> Router<Pool<Postgres>> {
         .route("/:id/data", get(get_item_data))
 }
 
+#[derive(Deserialize)]
+struct ItemsQuery {
+    name: String,
+    lang: Option<String>,
+}
+
 async fn search_items(
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<ItemsQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let item = match query.get("name") {
-        Some(item) => item,
-        None => return StatusCode::BAD_REQUEST.into_response(),
-    };
+    let lang = query.lang.unwrap_or("EN-US".to_string());
 
-    let lang = match query.get("lang") {
-        Some(lang) => lang,
-        None => "en_us",
-    };
+    let result = utils::db::search_items_by_localized_name(&pool, lang, query.name).await;
 
-    let result = utils::db::search_items_by_localized_name(&pool, lang, item).await;
-
-    let result = match result {
-        Ok(result) => result,
+    match result {
+        Ok(item) => Json(item).into_response(),
         Err(error) => {
             warn!("{:?}", error);
-            return StatusCode::NOT_FOUND.into_response();
+            StatusCode::NOT_FOUND.into_response()
         }
-    };
-
-    Json(result).into_response()
+    }
 }
 
 async fn get_item_data(
@@ -56,22 +52,27 @@ async fn get_item_data(
 ) -> Response<Body> {
     let result = utils::db::get_item_data_by_unique_name(&pool, &unique_name).await;
 
-    let item = match result {
-        Ok(item) => item,
+    match result {
+        Ok(item) => Json(item).into_response(),
         Err(e) => {
             warn!("{:?}", e);
-            return StatusCode::NOT_FOUND.into_response();
+            StatusCode::NOT_FOUND.into_response()
         }
-    };
-
-    Json(item).into_response()
+    }
 }
 
 async fn get_item_localizations(
     Path(unique_name): Path<String>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let result = utils::db::get_localized_names_by_unique_name(&pool, &unique_name).await;
+    let result = utils::db::get_localized_names_by_unique_name(&pool, &unique_name)
+        .await
+        .map(|names| {
+            names
+                .iter()
+                .map(|name| (name.lang.clone(), name.name.clone()))
+                .collect()
+        });
 
     let names = match result {
         Ok(item) => item,
@@ -81,7 +82,14 @@ async fn get_item_localizations(
         }
     };
 
-    let result = utils::db::get_localized_descriptions_by_unique_name(&pool, &unique_name).await;
+    let result = utils::db::get_localized_descriptions_by_unique_name(&pool, &unique_name)
+        .await
+        .map(|descriptions| {
+            descriptions
+                .iter()
+                .map(|description| (description.lang.clone(), description.description.clone()))
+                .collect()
+        });
 
     let descriptions = match result {
         Ok(item) => item,
@@ -91,171 +99,84 @@ async fn get_item_localizations(
         }
     };
 
-    let item = models::queries::Localizations {
-        unique_name: unique_name.to_string(),
-        names: names
-            .iter()
-            .map(|localized_name| (localized_name.lang.clone(), localized_name.name.clone()))
-            .collect(),
-        descriptions: descriptions
-            .iter()
-            .map(|localized_name| {
-                (
-                    localized_name.lang.clone(),
-                    localized_name.description.clone(),
-                )
-            })
-            .collect(),
-    };
+    Json(Localizations {
+        unique_name,
+        names,
+        descriptions,
+    })
+    .into_response()
+}
 
-    Json(item).into_response()
+#[derive(Deserialize)]
+struct ItemMarketHistorQuery {
+    timescale: i32,
+    location_id: Option<String>,
+    quality_level: Option<i32>,
 }
 
 async fn get_item_market_history(
     Path(unique_name): Path<String>,
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<ItemMarketHistorQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let timescale = match query.get("timescale") {
-        Some(timescale) => match timescale.parse::<i32>() {
-            Ok(timescale) => timescale,
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => return StatusCode::BAD_REQUEST.into_response(),
-    };
-
-    let location_id: Option<String> = query
-        .get("location_id")
-        .map(|location_id| location_id.to_string());
-
-    let quality_level = match query.get("quality_level") {
-        Some(quality_level) => match quality_level.parse::<i32>() {
-            Ok(quality_level) => Some(quality_level),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
     let result = utils::db::get_item_market_history(
         &pool,
         unique_name,
-        &timescale,
-        location_id,
-        quality_level,
+        query.timescale,
+        query.location_id,
+        query.quality_level,
     )
     .await;
 
-    let history = match result {
-        Ok(history) => history,
+    match result {
+        Ok(history) => Json(history).into_response(),
         Err(e) => {
             warn!("{:?}", e);
-            return StatusCode::NOT_FOUND.into_response();
+            StatusCode::NOT_FOUND.into_response()
         }
-    };
+    }
+}
 
-    Json(history).into_response()
+#[derive(Deserialize)]
+struct ItemMarketOrderQuery {
+    location_id: Option<String>,
+    auction_type: Option<String>,
+    quality_level: Option<i32>,
+    enchantment_level: Option<i32>,
+    tier: Option<i32>,
+    limit: Option<i64>,
+    offset: Option<i64>,
 }
 
 async fn get_item_market_orders(
     Path(unique_name): Path<String>,
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<ItemMarketOrderQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let location_id: Option<String> = query
-        .get("location_id")
-        .map(|location_id| location_id.to_string());
+    let limit = query
+        .limit
+        .map_or(100, |limit| if limit > 100 { 100 } else { limit });
 
-    let auction_type: Option<String> = query
-        .get("auction_type")
-        .map(|auction_type| auction_type.to_string());
-
-    let quality_level: Option<i32> = match query.get("quality_level") {
-        Some(quality_level) => match quality_level.parse::<i32>() {
-            Ok(quality_level) => Some(quality_level),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let enchantment_level: Option<i32> = match query.get("enchantment_level") {
-        Some(enchantment_level) => match enchantment_level.parse::<i32>() {
-            Ok(enchantment_level) => Some(enchantment_level),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let tier: Option<i32> = match query.get("tier") {
-        Some(tier) => match tier.parse::<i32>() {
-            Ok(tier) => Some(tier),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
-
-    let limit = match query.get("limit") {
-        Some(limit) => match limit.parse::<i64>() {
-            Ok(limit) => {
-                if limit > 100 {
-                    100
-                } else {
-                    limit
-                }
-            }
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => 100,
-    };
-
-    let offset = match query.get("offset") {
-        Some(offset) => match offset.parse::<i64>() {
-            Ok(offset) => offset,
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => 0,
-    };
+    let offset = query.offset.unwrap_or(0);
 
     let result = utils::db::query_market_orders(
         &pool,
         unique_name,
-        location_id,
-        auction_type,
-        quality_level,
-        enchantment_level,
-        tier,
+        query.location_id,
+        query.auction_type,
+        query.quality_level,
+        query.enchantment_level,
+        query.tier,
         limit,
         offset,
     )
     .await;
 
-    let orders = match result {
-        Ok(orders) => orders,
+    match result {
+        Ok(orders) => Json(orders).into_response(),
         Err(e) => {
             warn!("{:?}", e);
-            return StatusCode::NOT_FOUND.into_response();
+            StatusCode::NOT_FOUND.into_response()
         }
-    };
-
-    Json(orders).into_response()
+    }
 }

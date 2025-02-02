@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT\n    COUNT(*) as count\nFROM\n    market_order\nWHERE\n    auction_type = $1",
+  "query": "\nSELECT\n\tCOUNT(*) as count\nFROM\n\tmarket_order\nWHERE\n\t($1::TEXT IS NULL OR auction_type = $1)",
   "describe": {
     "columns": [
       {
@@ -18,5 +18,5 @@
       null
     ]
   },
-  "hash": "aa38ac1ccde7fcc199aa2ecb3a59d34a0772e5a38e73a85f3b0cd3bb54bac9e2"
+  "hash": "1ed72f03a5752d7cf78b6564dcaaa11cebc970dbfa745867aaee2cbd50334529"
 }

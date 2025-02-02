@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
 use axum::body::Body;
@@ -20,32 +19,24 @@ pub fn get_router() -> Router<Pool<Postgres>> {
         .route("/:id", get(get_location_by_id))
 }
 
+#[derive(Deserialize)]
+struct LocationsQuery {
+    min_market_orders: Option<i32>,
+}
+
 async fn get_locations(
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<LocationsQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let min_market_orders: Option<i32> = match query.get("min_market_orders") {
-        Some(min_market_orders) => match min_market_orders.parse::<i32>() {
-            Ok(min_market_orders) => Some(min_market_orders),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::BAD_REQUEST.into_response();
-            }
-        },
-        None => None,
-    };
+    let result = utils::db::query_locations(&pool, query.min_market_orders).await;
 
-    let result = utils::db::query_locations(&pool, min_market_orders).await;
-
-    let locations = match result {
-        Ok(locations) => locations,
+    match result {
+        Ok(locations) => Json(locations).into_response(),
         Err(e) => {
             warn!("{:?}", e);
             return StatusCode::NOT_FOUND.into_response();
         }
-    };
-
-    Json(locations).into_response()
+    }
 }
 
 async fn get_location_by_id(
@@ -54,13 +45,11 @@ async fn get_location_by_id(
 ) -> Response<Body> {
     let result = utils::db::get_locations_by_id(&pool, &id).await;
 
-    let locations = match result {
-        Ok(locations) => locations,
+    match result {
+        Ok(locations) => Json(locations).into_response(),
         Err(e) => {
             warn!("{:?}", e);
             return StatusCode::NOT_FOUND.into_response();
         }
-    };
-
-    Json(locations).into_response()
+    }
 }

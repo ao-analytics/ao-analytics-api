@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-
+use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
 use axum::body::Body;
@@ -22,16 +21,16 @@ pub fn get_router() -> Router<Pool<Postgres>> {
         .route("/items/:id", get(get_item_stats))
 }
 
+#[derive(Deserialize)]
+struct MarketOrderStatsQuery {
+    group_by: String,
+}
+
 async fn get_market_order_statistics(
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<MarketOrderStatsQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let group_by = match query.get("group_by") {
-        Some(group_by) => group_by,
-        None => return StatusCode::BAD_REQUEST.into_response(),
-    };
-
-    let interval = match group_by {
+    let interval = match &query.group_by {
         group_by if group_by.contains("hour") => "1 hour",
         group_by if group_by.contains("day") => "1 day",
         group_by if group_by.contains("week") => "1 week",
@@ -39,55 +38,67 @@ async fn get_market_order_statistics(
         _ => return StatusCode::BAD_REQUEST.into_response(),
     };
 
-    if group_by.contains("location") {
-        let market_order_count_by_location =
-            utils::db::get_market_orders_count_by_date_and_location(&pool, interval)
-                .await
-                .unwrap();
-
-        return Json(market_order_count_by_location).into_response();
-    }
-
-    let market_order_count_by_updated_at =
-        utils::db::get_market_orders_count_by_date(&pool, interval)
+    let result = match query.group_by.contains("location") {
+        true => utils::db::get_market_orders_count_by_date_and_location(&pool, interval)
             .await
-            .unwrap();
+            .map(|d| Json(d).into_response()),
+        false => utils::db::get_market_orders_count_by_date(&pool, interval)
+            .await
+            .map(|d| Json(d).into_response()),
+    };
 
-    Json(market_order_count_by_updated_at).into_response()
+    match result {
+        Ok(stats) => stats,
+        Err(e) => {
+            warn!("{:?}", e);
+            StatusCode::NOT_FOUND.into_response()
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct MarketOrderCountQuery {
+    aution_type: Option<String>,
 }
 
 async fn get_market_order_count(
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<MarketOrderCountQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let auction_type: Option<String> = query
-        .get("auction_type")
-        .map(|auction_type| auction_type.to_string());
+    let result = utils::db::get_market_orders_count(query.aution_type, &pool).await;
 
-    let market_order_count = utils::db::get_market_orders_count(auction_type, &pool)
-        .await
-        .unwrap();
-
-    Json(market_order_count).into_response()
+    match result {
+        Ok(count) => Json(count).into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
+    }
 }
 
 async fn get_market_history_count(State(pool): State<Pool<Postgres>>) -> Response<Body> {
-    let market_history_count = utils::db::get_market_histories_count(&pool).await.unwrap();
+    let result = utils::db::get_market_histories_count(&pool).await;
 
-    Json(market_history_count).into_response()
+    match result {
+        Ok(count) => Json(count).into_response(),
+        Err(e) => {
+            warn!("{:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct ItemStatsQuery {
+    group_by: String,
 }
 
 async fn get_item_stats(
     Path(id): Path<String>,
-    Query(query): Query<HashMap<String, String>>,
+    Query(query): Query<ItemStatsQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let group_by = match query.get("group_by") {
-        Some(group_by) => group_by.as_str(),
-        None => return StatusCode::BAD_REQUEST.into_response(),
-    };
-
-    let interval = match group_by {
+    let interval = match &query.group_by {
         group_by if group_by.contains("hour") => "1 hour",
         group_by if group_by.contains("day") => "1 day",
         group_by if group_by.contains("week") => "1 week",
@@ -95,22 +106,17 @@ async fn get_item_stats(
         _ => return StatusCode::BAD_REQUEST.into_response(),
     };
 
-    if group_by.contains("location") {
-        let result = utils::db::get_item_stats_by_date_and_location(&pool, &id, interval).await;
-
-        return match result {
-            Ok(item_stats) => Json(item_stats).into_response(),
-            Err(e) => {
-                warn!("{:?}", e);
-                return StatusCode::NOT_FOUND.into_response();
-            }
-        };
-    }
-
-    let result = utils::db::get_item_stats_by_date(&pool, &id, interval).await;
+    let result = match query.group_by.contains("location") {
+        true => utils::db::get_item_stats_by_date_and_location(&pool, &id, interval)
+            .await
+            .map(|d| Json(d).into_response()),
+        false => utils::db::get_item_stats_by_date(&pool, &id, interval)
+            .await
+            .map(|d| Json(d).into_response()),
+    };
 
     match result {
-        Ok(item_stats) => Json(item_stats).into_response(),
+        Ok(stats) => stats,
         Err(e) => {
             warn!("{:?}", e);
             StatusCode::NOT_FOUND.into_response()
