@@ -29,9 +29,9 @@ LIMIT 10",
     .await
 }
 
-pub async fn get_item_data_by_unique_name(
+pub async fn get_item_data_by_item_group_name(
     pool: &PgPool,
-    unique_name: &String,
+    item_group_name: &String,
 ) -> Result<Value, sqlx::Error> {
     sqlx::query!(
         "
@@ -40,8 +40,8 @@ SELECT
 FROM
     item_data
 WHERE
-    item_unique_name = $1",
-        unique_name
+    item_group_name = $1",
+        item_group_name
     )
     .fetch_one(pool)
     .await
@@ -51,11 +51,11 @@ WHERE
 pub async fn query_market_orders(
     pool: &PgPool,
     unique_name: String,
-    location_id: Option<String>,
+    location_id: Option<i16>,
     auction_type: Option<String>,
-    quality_level: Option<i32>,
-    enchantment_level: Option<i32>,
-    tier: Option<i32>,
+    quality_level: Option<i16>,
+    enchantment_level: Option<i16>,
+    tier: Option<i16>,
     limit: i64,
     offset: i64,
 ) -> Result<Vec<queries::MarketOrder>, sqlx::Error> {
@@ -64,9 +64,9 @@ pub async fn query_market_orders(
         "
 SELECT
     market_order.id,
-    location.id as location_id,
+    location_id,
     market_order.item_unique_name,
-    tier,
+    (item_data.data->>'@tier')::SMALLINT as tier,
     enchantment_level,
     quality_level,
     unit_price_silver,
@@ -76,16 +76,16 @@ SELECT
     updated_at
 FROM
     market_order
-    JOIN item_data ON (market_order.item_unique_name = item_data.item_unique_name OR REGEXP_REPLACE(market_order.item_unique_name, '@.', '') = item_data.item_unique_name)
-    JOIN location ON location_id = location.id
+    JOIN item ON market_order.item_unique_name = item.unique_name
+    JOIN item_data ON item_data.item_group_name = item.item_group_name
 WHERE
     expires_at > NOW()
     AND market_order.item_unique_name = $1
-    AND ( $2::TEXT IS NULL OR location.id = $2 )
+    AND ( $2::SMALLINT IS NULL OR location_id = $2 )
     AND ( $3::TEXT IS NULL OR auction_type = $3 )
-    AND ( $4::INT IS NULL OR quality_level = $4 )
-    AND ( $5::INT IS NULL OR (item_data.data->>'@tier')::INT = $5 )
-    AND ( $6::INT IS NULL OR COALESCE(NULLIF(item_data.data->>'@enchantmentlevel', ''), NULLIF(SPLIT_PART(market_order.item_unique_name, '@', 2), ''), '0')::INT = $6 )
+    AND ( $4::SMALLINT IS NULL OR quality_level = $4 )
+    AND ( $5::SMALLINT IS NULL OR (item_data.data->>'@tier')::SMALLINT = $5 )
+    AND ( $6::SMALLINT IS NULL OR item.enchantment_level::SMALLINT = $6 )
 ORDER BY unit_price_silver ASC
 OFFSET $7
 LIMIT $8",
@@ -106,11 +106,11 @@ pub async fn query_market_orders_with_localized_name(
     pool: &PgPool,
     localized_name: Option<String>,
     lang: String,
-    location_id: Option<String>,
+    location_id: Option<i16>,
     auction_type: Option<String>,
-    quality_level: Option<i32>,
-    enchantment_level: Option<i32>,
-    tier: Option<i32>,
+    quality_level: Option<i16>,
+    enchantment_level: Option<i16>,
+    tier: Option<i16>,
     limit: i64,
     offset: i64,
 ) -> Result<Vec<queries::MarketOrder>, sqlx::Error> {
@@ -121,7 +121,7 @@ SELECT
     market_order.id,
     location.id as location_id,
     market_order.item_unique_name,
-    tier,
+    (item_data.data->>'@tier')::SMALLINT as tier,
     enchantment_level,
     quality_level,
     unit_price_silver,
@@ -131,16 +131,18 @@ SELECT
     updated_at
 FROM
     market_order
+    JOIN item ON market_order.item_unique_name = item.unique_name
+    JOIN item_data ON item_data.item_group_name = item.item_group_name
     JOIN location ON location_id = location.id
     JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name
 WHERE
     expires_at > NOW()
     AND lang = $1
-    AND ( $3::TEXT IS NULL OR location.id = $3 )
+    AND ( $3::SMALLINT IS NULL OR location.id = $3 )
     AND ( $4::TEXT IS NULL OR auction_type = $4 )
-    AND ( $5::INT IS NULL OR quality_level = $5 )
-    AND ( $6::INT IS NULL OR tier = $6 )
-    AND ( $7::INT IS NULL OR enchantment_level = $7 )
+    AND ( $5::SMALLINT IS NULL OR quality_level = $5 )
+    AND ( $6::SMALLINT IS NULL OR (item_data.data->>'@tier')::SMALLINT = $6 )
+    AND ( $7::SMALLINT IS NULL OR enchantment_level = $7 )
 ORDER BY
     SIMILARITY(localized_name.name, $2) DESC,
     unit_price_silver ASC
@@ -260,14 +262,15 @@ pub async fn get_market_orders_count_by_date_and_location(
         "
 SELECT
     time_bucket($1::TEXT::INTERVAL, date) as date,
-    location.name as location,
+    location_data.name as location,
     SUM(count)::BIGINT as count
 FROM
     market_orders_count_by_hour_and_location
     JOIN location ON location.id = market_orders_count_by_hour_and_location.location_id
+    JOIN location_data ON location_data.location_id = location.id
 GROUP BY
     time_bucket($1::TEXT::INTERVAL, date),
-    location.name
+    location_data.name
 ORDER BY
     date DESC",
         interval
@@ -285,23 +288,17 @@ pub async fn query_locations(
         "
 SELECT
     location.id,
-    location.name
+    location_data.name
 FROM
     location
-LEFT JOIN (
-    SELECT
-        location_id,
-        COUNT(*) as count
-    FROM
-        market_order
-    GROUP BY
-        location_id
-) AS market_order_count
-ON market_order_count.location_id = location.id
-WHERE
-    ( $1::INT IS NULL OR $1 <= COALESCE(market_order_count.count, 0) )
+    JOIN location_data ON location_data.location_id = location.id
+    LEFT JOIN market_order ON market_order.location_id = location.id
+GROUP BY
+    location.id, location_data.name
+HAVING
+    ($1::INT IS NULL OR COUNT(market_order.location_id) >= $1)
 ORDER BY
-    market_order_count.count DESC",
+    COUNT(market_order.location_id) DESC",
         min_market_orders
     )
     .fetch_all(pool)
@@ -310,16 +307,17 @@ ORDER BY
 
 pub async fn get_locations_by_id(
     pool: &PgPool,
-    location_id: &String,
+    location_id: &i16,
 ) -> Result<queries::Location, sqlx::Error> {
     sqlx::query_as!(
         queries::Location,
         "
 SELECT
     location.id,
-    location.name
+    location_data.name
 FROM
     location
+    JOIN location_data ON location_data.location_id = location.id
 WHERE
     location.id = $1",
         location_id
@@ -342,11 +340,11 @@ SELECT
     SUM(total_count)::BIGINT as total_count,
     MAX(max_unit_price_silver_offer) as max_unit_price_silver_offer,
     MIN(min_unit_price_silver_offer) as min_unit_price_silver_offer,
-    AVG(avg_unit_price_silver_offer)::INTEGER as avg_unit_price_silver_offer,
+    AVG(avg_unit_price_silver_offer)::BIGINT as avg_unit_price_silver_offer,
     SUM(sum_amount_offer)::BIGINT as sum_amount_offer,
     MAX(max_unit_price_silver_request) as max_unit_price_silver_request,
     MIN(min_unit_price_silver_request) as min_unit_price_silver_request,
-    AVG(avg_unit_price_silver_request)::INTEGER as avg_unit_price_silver_request,
+    AVG(avg_unit_price_silver_request)::BIGINT as avg_unit_price_silver_request,
     SUM(sum_amount_request)::BIGINT as sum_amount_request
 FROM
     item_prices_by_hour
@@ -379,11 +377,11 @@ SELECT
     SUM(total_count)::BIGINT as total_count,
     MAX(max_unit_price_silver_offer) as max_unit_price_silver_offer,
     MIN(min_unit_price_silver_offer) as min_unit_price_silver_offer,
-    AVG(avg_unit_price_silver_offer)::INTEGER as avg_unit_price_silver_offer,
+    AVG(avg_unit_price_silver_offer)::BIGINT as avg_unit_price_silver_offer,
     SUM(sum_amount_offer)::BIGINT as sum_amount_offer,
     MAX(max_unit_price_silver_request) as max_unit_price_silver_request,
     MIN(min_unit_price_silver_request) as min_unit_price_silver_request,
-    AVG(avg_unit_price_silver_request)::INTEGER as avg_unit_price_silver_request,
+    AVG(avg_unit_price_silver_request)::BIGINT as avg_unit_price_silver_request,
     SUM(sum_amount_request)::BIGINT as sum_amount_request
 FROM
     item_prices_by_hour_and_location
@@ -406,9 +404,9 @@ ORDER BY
 pub async fn get_item_market_history(
     pool: &sqlx::Pool<sqlx::Postgres>,
     unique_name: String,
-    timescale: i32,
-    location_id: Option<String>,
-    quality_level: Option<i32>,
+    timescale: i16,
+    location_id: Option<i16>,
+    quality_level: Option<i16>,
 ) -> Result<Vec<queries::ItemMarketHistory>, sqlx::Error> {
     sqlx::query_as!(
         queries::ItemMarketHistory,
@@ -426,8 +424,8 @@ FROM
 WHERE
     item_unique_name = $1
     AND timescale = $2
-    AND ( $3::TEXT IS NULL OR location_id = $3 )
-    AND ( $4::INT IS NULL OR quality_level = $4 )
+    AND ( $3::SMALLINT IS NULL OR location_id = $3 )
+    AND ( $4::SMALLINT IS NULL OR quality_level = $4 )
 ORDER BY
     timestamp DESC
     ",

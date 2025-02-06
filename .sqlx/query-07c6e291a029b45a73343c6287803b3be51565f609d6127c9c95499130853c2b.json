@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT\n    time_bucket($1::TEXT::INTERVAL, date) as date,\n    location_data.name as location,\n    SUM(count)::BIGINT as count\nFROM\n    market_orders_count_by_hour_and_location\n    JOIN location ON location.id = market_orders_count_by_hour_and_location.location_id\n    JOIN location_data ON location_data.location_id = location.id\nGROUP BY\n    time_bucket($1::TEXT::INTERVAL, date),\n    location_data.name\nORDER BY\n    date DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "date",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "location",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      false,
+      null
+    ]
+  },
+  "hash": "07c6e291a029b45a73343c6287803b3be51565f609d6127c9c95499130853c2b"
+}

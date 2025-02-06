@@ -21,11 +21,11 @@ pub fn get_router() -> Router<Pool<Postgres>> {
 struct MarketOrderQuery {
     item_name: Option<String>,
     lang: Option<String>,
-    location_id: Option<String>,
+    location_id: Option<i16>,
     auction_type: Option<String>,
-    quality_level: Option<i32>,
-    enchantment_level: Option<i32>,
-    tier: Option<i32>,
+    quality_level: Option<i16>,
+    enchantment_level: Option<i16>,
+    tier: Option<i16>,
     limit: Option<i64>,
     offset: Option<i64>,
 }

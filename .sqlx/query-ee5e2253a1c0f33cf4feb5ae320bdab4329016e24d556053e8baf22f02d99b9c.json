@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT\n    location.id,\n    location_data.name\nFROM\n    location\n    JOIN location_data ON location_data.location_id = location.id\n    LEFT JOIN market_order ON market_order.location_id = location.id\nGROUP BY\n    location.id, location_data.name\nHAVING\n    ($1::INT IS NULL OR COUNT(market_order.location_id) >= $1)\nORDER BY\n    COUNT(market_order.location_id) DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "ee5e2253a1c0f33cf4feb5ae320bdab4329016e24d556053e8baf22f02d99b9c"
+}

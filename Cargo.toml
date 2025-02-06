@@ -1,6 +1,6 @@
 [package]
 name = "ao-analytics-api"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -24,4 +24,3 @@ tower-http = { version = "0.5.2", features = ["cors", "trace"] }
 tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 config = { version = "*", git = "https://github.com/veqox/config-rs.git" }
-ao-analytics-models = { version = "*", git = "https://github.com/ao-analytics/ao-analytics-models.git" }

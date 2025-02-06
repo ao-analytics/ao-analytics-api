@@ -39,12 +39,12 @@ pub struct LocalizationResponse {
 pub struct MarketOrder {
     pub id: i64,
     pub item_unique_name: String,
-    pub location_id: String,
-    pub tier: i32,
-    pub enchantment_level: i32,
-    pub quality_level: i32,
-    pub unit_price_silver: i32,
-    pub amount: i32,
+    pub location_id: i16,
+    pub tier: Option<i16>,
+    pub enchantment_level: i16,
+    pub quality_level: i16,
+    pub unit_price_silver: i64,
+    pub amount: i64,
     pub auction_type: String,
     pub expires_at: chrono::DateTime<Utc>,
     pub updated_at: chrono::DateTime<Utc>,
@@ -118,7 +118,7 @@ pub struct MarketOrderCountByCreatedAt {
 
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct Location {
-    pub id: String,
+    pub id: i16,
     pub name: String,
 }
 
@@ -147,15 +147,15 @@ pub struct SearchResult {
 pub struct ItemStatsByDateAndLocation {
     pub date: Option<chrono::DateTime<Utc>>,
     pub item_unique_name: Option<String>,
-    pub location_id: Option<String>,
+    pub location_id: Option<i16>,
     pub total_count: Option<i64>,
-    pub max_unit_price_silver_request: Option<i32>,
-    pub min_unit_price_silver_request: Option<i32>,
-    pub avg_unit_price_silver_request: Option<i32>,
+    pub max_unit_price_silver_request: Option<i64>,
+    pub min_unit_price_silver_request: Option<i64>,
+    pub avg_unit_price_silver_request: Option<i64>,
     pub sum_amount_request: Option<i64>,
-    pub max_unit_price_silver_offer: Option<i32>,
-    pub min_unit_price_silver_offer: Option<i32>,
-    pub avg_unit_price_silver_offer: Option<i32>,
+    pub max_unit_price_silver_offer: Option<i64>,
+    pub min_unit_price_silver_offer: Option<i64>,
+    pub avg_unit_price_silver_offer: Option<i64>,
     pub sum_amount_offer: Option<i64>,
 }
 
@@ -164,13 +164,13 @@ pub struct ItemStatsByDate {
     pub date: Option<chrono::DateTime<Utc>>,
     pub item_unique_name: Option<String>,
     pub total_count: Option<i64>,
-    pub max_unit_price_silver_request: Option<i32>,
-    pub min_unit_price_silver_request: Option<i32>,
-    pub avg_unit_price_silver_request: Option<i32>,
+    pub max_unit_price_silver_request: Option<i64>,
+    pub min_unit_price_silver_request: Option<i64>,
+    pub avg_unit_price_silver_request: Option<i64>,
     pub sum_amount_request: Option<i64>,
-    pub max_unit_price_silver_offer: Option<i32>,
-    pub min_unit_price_silver_offer: Option<i32>,
-    pub avg_unit_price_silver_offer: Option<i32>,
+    pub max_unit_price_silver_offer: Option<i64>,
+    pub min_unit_price_silver_offer: Option<i64>,
+    pub avg_unit_price_silver_offer: Option<i64>,
     pub sum_amount_offer: Option<i64>,
 }
 
@@ -178,10 +178,10 @@ pub struct ItemStatsByDate {
 pub struct ItemMarketHistory {
     pub item_unique_name: String,
     pub timestamp: chrono::DateTime<Utc>,
-    pub location_id: String,
-    pub quality_level: i32,
-    pub item_amount: i32,
-    pub silver_amount: i32,
+    pub location_id: i16,
+    pub quality_level: i16,
+    pub item_amount: i64,
+    pub silver_amount: i64,
     pub updated_at: chrono::DateTime<Utc>,
 }
 

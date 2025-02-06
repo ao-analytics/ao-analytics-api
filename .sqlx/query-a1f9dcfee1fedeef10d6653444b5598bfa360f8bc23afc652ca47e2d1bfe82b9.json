@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT\n    item_unique_name,\n    timestamp,\n    location_id,\n    quality_level,\n    item_amount,\n    silver_amount,\n    updated_at\nFROM\n    market_history\nWHERE\n    item_unique_name = $1\n    AND timescale = $2\n    AND ( $3::TEXT IS NULL OR location_id = $3 )\n    AND ( $4::INT IS NULL OR quality_level = $4 )\nORDER BY\n    timestamp DESC\n    ",
+  "query": "\nSELECT\n    item_unique_name,\n    timestamp,\n    location_id,\n    quality_level,\n    item_amount,\n    silver_amount,\n    updated_at\nFROM\n    market_history\nWHERE\n    item_unique_name = $1\n    AND timescale = $2\n    AND ( $3::SMALLINT IS NULL OR location_id = $3 )\n    AND ( $4::SMALLINT IS NULL OR quality_level = $4 )\nORDER BY\n    timestamp DESC\n    ",
   "describe": {
     "columns": [
       {
@@ -16,22 +16,22 @@
       {
         "ordinal": 2,
         "name": "location_id",
-        "type_info": "Text"
+        "type_info": "Int2"
       },
       {
         "ordinal": 3,
         "name": "quality_level",
-        "type_info": "Int4"
+        "type_info": "Int2"
       },
       {
         "ordinal": 4,
         "name": "item_amount",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 5,
         "name": "silver_amount",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 6,
@@ -42,9 +42,9 @@
     "parameters": {
       "Left": [
         "Text",
-        "Int4",
-        "Text",
-        "Int4"
+        "Int2",
+        "Int2",
+        "Int2"
       ]
     },
     "nullable": [
@@ -57,5 +57,5 @@
       false
     ]
   },
-  "hash": "c136d430e444133406f4918c967749316e06ed11ee025a4fdf34fc1c7da936c2"
+  "hash": "a1f9dcfee1fedeef10d6653444b5598bfa360f8bc23afc652ca47e2d1bfe82b9"
 }

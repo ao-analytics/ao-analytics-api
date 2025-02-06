@@ -1,0 +1,90 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT\n    market_order.id,\n    location.id as location_id,\n    market_order.item_unique_name,\n    (item_data.data->>'@tier')::SMALLINT as tier,\n    enchantment_level,\n    quality_level,\n    unit_price_silver,\n    amount,\n    auction_type,\n    expires_at,\n    updated_at\nFROM\n    market_order\n    JOIN item ON market_order.item_unique_name = item.unique_name\n    JOIN item_data ON item_data.item_group_name = item.item_group_name\n    JOIN location ON location_id = location.id\n    JOIN localized_name ON market_order.item_unique_name = localized_name.item_unique_name\nWHERE\n    expires_at > NOW()\n    AND lang = $1\n    AND ( $3::SMALLINT IS NULL OR location.id = $3 )\n    AND ( $4::TEXT IS NULL OR auction_type = $4 )\n    AND ( $5::SMALLINT IS NULL OR quality_level = $5 )\n    AND ( $6::SMALLINT IS NULL OR (item_data.data->>'@tier')::SMALLINT = $6 )\n    AND ( $7::SMALLINT IS NULL OR enchantment_level = $7 )\nORDER BY\n    SIMILARITY(localized_name.name, $2) DESC,\n    unit_price_silver ASC\nOFFSET $8\nLIMIT $9",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "location_id",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 2,
+        "name": "item_unique_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "tier",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 4,
+        "name": "enchantment_level",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 5,
+        "name": "quality_level",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 6,
+        "name": "unit_price_silver",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "amount",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "auction_type",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "expires_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Int2",
+        "Text",
+        "Int2",
+        "Int2",
+        "Int2",
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4642abed569b338099ec84a40d7cee7ad1e6b71af751e934517c90281fba3148"
+}

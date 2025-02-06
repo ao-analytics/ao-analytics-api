@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT\n    time_bucket($2::TEXT::INTERVAL, date) as date,\n    item_unique_name,\n    SUM(total_count)::BIGINT as total_count,\n    MAX(max_unit_price_silver_offer) as max_unit_price_silver_offer,\n    MIN(min_unit_price_silver_offer) as min_unit_price_silver_offer,\n    AVG(avg_unit_price_silver_offer)::INTEGER as avg_unit_price_silver_offer,\n    SUM(sum_amount_offer)::BIGINT as sum_amount_offer,\n    MAX(max_unit_price_silver_request) as max_unit_price_silver_request,\n    MIN(min_unit_price_silver_request) as min_unit_price_silver_request,\n    AVG(avg_unit_price_silver_request)::INTEGER as avg_unit_price_silver_request,\n    SUM(sum_amount_request)::BIGINT as sum_amount_request\nFROM\n    item_prices_by_hour\nWHERE\n    item_unique_name = $1\nGROUP BY\n    time_bucket($2::TEXT::INTERVAL, date),\n    item_unique_name\nORDER BY\n    date DESC",
+  "query": "\nSELECT\n    time_bucket($2::TEXT::INTERVAL, date) as date,\n    item_unique_name,\n    SUM(total_count)::BIGINT as total_count,\n    MAX(max_unit_price_silver_offer) as max_unit_price_silver_offer,\n    MIN(min_unit_price_silver_offer) as min_unit_price_silver_offer,\n    AVG(avg_unit_price_silver_offer)::BIGINT as avg_unit_price_silver_offer,\n    SUM(sum_amount_offer)::BIGINT as sum_amount_offer,\n    MAX(max_unit_price_silver_request) as max_unit_price_silver_request,\n    MIN(min_unit_price_silver_request) as min_unit_price_silver_request,\n    AVG(avg_unit_price_silver_request)::BIGINT as avg_unit_price_silver_request,\n    SUM(sum_amount_request)::BIGINT as sum_amount_request\nFROM\n    item_prices_by_hour\nWHERE\n    item_unique_name = $1\nGROUP BY\n    time_bucket($2::TEXT::INTERVAL, date),\n    item_unique_name\nORDER BY\n    date DESC",
   "describe": {
     "columns": [
       {
@@ -21,17 +21,17 @@
       {
         "ordinal": 3,
         "name": "max_unit_price_silver_offer",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 4,
         "name": "min_unit_price_silver_offer",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 5,
         "name": "avg_unit_price_silver_offer",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 6,
@@ -41,17 +41,17 @@
       {
         "ordinal": 7,
         "name": "max_unit_price_silver_request",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 8,
         "name": "min_unit_price_silver_request",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 9,
         "name": "avg_unit_price_silver_request",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 10,
@@ -79,5 +79,5 @@
       null
     ]
   },
-  "hash": "daa5c19abe5654de9099a33b6a60a68e75be5dedd42f60ffa1dbada508ea09f8"
+  "hash": "ed8969500927d93fab8b10f6429db98492f5067d1985611571d0e3ced6518b31"
 }

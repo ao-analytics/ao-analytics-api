@@ -47,10 +47,10 @@ async fn search_items(
 }
 
 async fn get_item_data(
-    Path(unique_name): Path<String>,
+    Path(item_group_name): Path<String>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let result = utils::db::get_item_data_by_unique_name(&pool, &unique_name).await;
+    let result = utils::db::get_item_data_by_item_group_name(&pool, &item_group_name).await;
 
     match result {
         Ok(item) => Json(item).into_response(),
@@ -109,9 +109,9 @@ async fn get_item_localizations(
 
 #[derive(Deserialize)]
 struct ItemMarketHistorQuery {
-    timescale: i32,
-    location_id: Option<String>,
-    quality_level: Option<i32>,
+    timescale: i16,
+    location_id: Option<i16>,
+    quality_level: Option<i16>,
 }
 
 async fn get_item_market_history(
@@ -139,11 +139,11 @@ async fn get_item_market_history(
 
 #[derive(Deserialize)]
 struct ItemMarketOrderQuery {
-    location_id: Option<String>,
+    location_id: Option<i16>,
     auction_type: Option<String>,
-    quality_level: Option<i32>,
-    enchantment_level: Option<i32>,
-    tier: Option<i32>,
+    quality_level: Option<i16>,
+    enchantment_level: Option<i16>,
+    tier: Option<i16>,
     limit: Option<i64>,
     offset: Option<i64>,
 }

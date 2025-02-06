@@ -40,7 +40,7 @@ async fn get_locations(
 }
 
 async fn get_location_by_id(
-    Path(id): Path<String>,
+    Path(id): Path<i16>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
     let result = utils::db::get_locations_by_id(&pool, &id).await;

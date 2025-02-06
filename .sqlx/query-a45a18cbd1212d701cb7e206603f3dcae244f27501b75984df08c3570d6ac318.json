@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\nSELECT\n    time_bucket($2::TEXT::INTERVAL, date) as date,\n    item_unique_name,\n    location_id,\n    SUM(total_count)::BIGINT as total_count,\n    MAX(max_unit_price_silver_offer) as max_unit_price_silver_offer,\n    MIN(min_unit_price_silver_offer) as min_unit_price_silver_offer,\n    AVG(avg_unit_price_silver_offer)::INTEGER as avg_unit_price_silver_offer,\n    SUM(sum_amount_offer)::BIGINT as sum_amount_offer,\n    MAX(max_unit_price_silver_request) as max_unit_price_silver_request,\n    MIN(min_unit_price_silver_request) as min_unit_price_silver_request,\n    AVG(avg_unit_price_silver_request)::INTEGER as avg_unit_price_silver_request,\n    SUM(sum_amount_request)::BIGINT as sum_amount_request\nFROM\n    item_prices_by_hour_and_location\nWHERE\n    item_unique_name = $1\nGROUP BY\n    time_bucket($2::TEXT::INTERVAL, date),\n    item_unique_name,\n    location_id\nORDER BY\n    date DESC\n    ",
+  "query": "\nSELECT\n    time_bucket($2::TEXT::INTERVAL, date) as date,\n    item_unique_name,\n    location_id,\n    SUM(total_count)::BIGINT as total_count,\n    MAX(max_unit_price_silver_offer) as max_unit_price_silver_offer,\n    MIN(min_unit_price_silver_offer) as min_unit_price_silver_offer,\n    AVG(avg_unit_price_silver_offer)::BIGINT as avg_unit_price_silver_offer,\n    SUM(sum_amount_offer)::BIGINT as sum_amount_offer,\n    MAX(max_unit_price_silver_request) as max_unit_price_silver_request,\n    MIN(min_unit_price_silver_request) as min_unit_price_silver_request,\n    AVG(avg_unit_price_silver_request)::BIGINT as avg_unit_price_silver_request,\n    SUM(sum_amount_request)::BIGINT as sum_amount_request\nFROM\n    item_prices_by_hour_and_location\nWHERE\n    item_unique_name = $1\nGROUP BY\n    time_bucket($2::TEXT::INTERVAL, date),\n    item_unique_name,\n    location_id\nORDER BY\n    date DESC\n    ",
   "describe": {
     "columns": [
       {
@@ -16,7 +16,7 @@
       {
         "ordinal": 2,
         "name": "location_id",
-        "type_info": "Text"
+        "type_info": "Int2"
       },
       {
         "ordinal": 3,
@@ -26,17 +26,17 @@
       {
         "ordinal": 4,
         "name": "max_unit_price_silver_offer",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 5,
         "name": "min_unit_price_silver_offer",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 6,
         "name": "avg_unit_price_silver_offer",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 7,
@@ -46,17 +46,17 @@
       {
         "ordinal": 8,
         "name": "max_unit_price_silver_request",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 9,
         "name": "min_unit_price_silver_request",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 10,
         "name": "avg_unit_price_silver_request",
-        "type_info": "Int4"
+        "type_info": "Int8"
       },
       {
         "ordinal": 11,
@@ -85,5 +85,5 @@
       null
     ]
   },
-  "hash": "2f31ca962c690f0f4e6cf2d12e1f682e8ffa5cf27af5d46fc2f4c720179b1194"
+  "hash": "a45a18cbd1212d701cb7e206603f3dcae244f27501b75984df08c3570d6ac318"
 }
