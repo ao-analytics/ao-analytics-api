@@ -58,14 +58,14 @@ async fn get_market_order_statistics(
 
 #[derive(Deserialize)]
 struct MarketOrderCountQuery {
-    aution_type: Option<String>,
+    auction_type: Option<String>,
 }
 
 async fn get_market_order_count(
     Query(query): Query<MarketOrderCountQuery>,
     State(pool): State<Pool<Postgres>>,
 ) -> Response<Body> {
-    let result = utils::db::get_market_orders_count(query.aution_type, &pool).await;
+    let result = utils::db::get_market_orders_count(query.auction_type, &pool).await;
 
     match result {
         Ok(count) => Json(count).into_response(),
