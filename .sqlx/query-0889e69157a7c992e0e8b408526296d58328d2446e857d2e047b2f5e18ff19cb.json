@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nSELECT DISTINCT ON (timestamp, quality_level)\n\ttime_bucket('1 day', timestamp) as timestamp,\n    item_unique_name,\n    location_id,\n    quality_level,\n    SUM(item_amount)::BIGINT as item_amount,\n    SUM(silver_amount)::BIGINT as silver_amount,\n    updated_at\nFROM\n    market_history\nWHERE\n    item_unique_name = $1\n    AND timescale != 0\n    AND ( $2::SMALLINT IS NULL OR location_id = $2 )\n    AND ( $3::SMALLINT IS NULL OR quality_level = $3 )\n    AND ( $4::TIMESTAMPTZ IS NULL OR timestamp > $4 )\n    AND ( $5::TIMESTAMPTZ IS NULL OR timestamp < $5 )\nGROUP BY\n\ttime_bucket('1 day', timestamp),\n\ttimescale,\n\titem_unique_name,\n    location_id,\n    quality_level,\n    updated_at\nORDER BY\n    timestamp DESC,\n    quality_level DESC,\n    updated_at DESC\n    ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "timestamp",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 1,
+        "name": "item_unique_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "location_id",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 3,
+        "name": "quality_level",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 4,
+        "name": "item_amount",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 5,
+        "name": "silver_amount",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int2",
+        "Int2",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      false,
+      false,
+      false,
+      null,
+      null,
+      false
+    ]
+  },
+  "hash": "0889e69157a7c992e0e8b408526296d58328d2446e857d2e047b2f5e18ff19cb"
+}

@@ -1,3 +1,4 @@
+use chrono::{NaiveDate, NaiveTime};
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 
@@ -109,9 +110,10 @@ async fn get_item_localizations(
 
 #[derive(Deserialize)]
 struct ItemMarketHistorQuery {
-    timescale: i16,
     location_id: Option<i16>,
     quality_level: Option<i16>,
+    from: Option<NaiveDate>,
+    to: Option<NaiveDate>,
 }
 
 async fn get_item_market_history(
@@ -122,9 +124,14 @@ async fn get_item_market_history(
     let result = utils::db::get_item_market_history(
         &pool,
         unique_name,
-        query.timescale,
         query.location_id,
         query.quality_level,
+        query
+            .from
+            .map(|from| from.and_time(NaiveTime::default()).and_utc()),
+        query
+            .to
+            .map(|from| from.and_time(NaiveTime::default()).and_utc()),
     )
     .await;
 

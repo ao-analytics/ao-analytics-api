@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde_json::Value;
 use sqlx::PgPool;
 
@@ -404,35 +405,48 @@ ORDER BY
 pub async fn get_item_market_history(
     pool: &sqlx::Pool<sqlx::Postgres>,
     unique_name: String,
-    timescale: i16,
     location_id: Option<i16>,
     quality_level: Option<i16>,
+    from: Option<DateTime<Utc>>,
+    to: Option<DateTime<Utc>>,
 ) -> Result<Vec<queries::ItemMarketHistory>, sqlx::Error> {
     sqlx::query_as!(
         queries::ItemMarketHistory,
         "
-SELECT
+SELECT DISTINCT ON (timestamp, quality_level)
+	time_bucket('1 day', timestamp) as timestamp,
     item_unique_name,
-    timestamp,
     location_id,
     quality_level,
-    item_amount,
-    silver_amount,
+    SUM(item_amount)::BIGINT as item_amount,
+    SUM(silver_amount)::BIGINT as silver_amount,
     updated_at
 FROM
     market_history
 WHERE
     item_unique_name = $1
-    AND timescale = $2
-    AND ( $3::SMALLINT IS NULL OR location_id = $3 )
-    AND ( $4::SMALLINT IS NULL OR quality_level = $4 )
+    AND timescale != 0
+    AND ( $2::SMALLINT IS NULL OR location_id = $2 )
+    AND ( $3::SMALLINT IS NULL OR quality_level = $3 )
+    AND ( $4::TIMESTAMPTZ IS NULL OR timestamp > $4 )
+    AND ( $5::TIMESTAMPTZ IS NULL OR timestamp < $5 )
+GROUP BY
+	time_bucket('1 day', timestamp),
+	timescale,
+	item_unique_name,
+    location_id,
+    quality_level,
+    updated_at
 ORDER BY
-    timestamp DESC
+    timestamp DESC,
+    quality_level DESC,
+    updated_at DESC
     ",
         unique_name,
-        timescale,
         location_id,
-        quality_level
+        quality_level,
+        from,
+        to
     )
     .fetch_all(pool)
     .await

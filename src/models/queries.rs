@@ -177,11 +177,11 @@ pub struct ItemStatsByDate {
 #[derive(sqlx::FromRow, serde::Serialize)]
 pub struct ItemMarketHistory {
     pub item_unique_name: String,
-    pub timestamp: chrono::DateTime<Utc>,
+    pub timestamp: Option<chrono::DateTime<Utc>>,
     pub location_id: i16,
     pub quality_level: i16,
-    pub item_amount: i64,
-    pub silver_amount: i64,
+    pub item_amount: Option<i64>,
+    pub silver_amount: Option<i64>,
     pub updated_at: chrono::DateTime<Utc>,
 }
 
